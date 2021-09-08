@@ -5,13 +5,13 @@ import { Calendar as BigCalendar, momentLocalizer } from "react-big-calendar";
 // dependency plugin for react-big-calendar
 import moment from "moment";
 import axios from "axios";
+import RBCToolbar from "./CustomToolbar.js";
 
 // react component used to create alerts
 import SweetAlert from "react-bootstrap-sweetalert";
 
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
-
 
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
@@ -159,20 +159,30 @@ export default function Calendar(props) {
                   localizer={localizer}
                   events={events}
                   defaultView="month"
-                  defaultDate={new Date()}
+                  defaultDate={
+                    new Date(`${props.billyear}-${props.BillMonthNumber}-01`)
+                  }
                   onSelectEvent={(event) => selectedEvent(event)}
                   onSelectSlot={(slotInfo) => addNewEventAlert(slotInfo)}
                   eventPropGetter={eventColors}
+                  components={{
+                    toolbar: RBCToolbar,
+                  }}
                 />
               ) : (
                 <BigCalendar
                   localizer={localizer}
                   events={events}
                   defaultView="month"
-                  defaultDate={new Date()}
+                  defaultDate={
+                    new Date(`${props.billyear}-${props.BillMonthNumber}-01`)
+                  }
                   onSelectEvent={(event) => selectedEvent(event)}
                   onSelectSlot={(slotInfo) => addNewEventAlert(slotInfo)}
                   eventPropGetter={eventColors}
+                  components={{
+                    toolbar: RBCToolbar,
+                  }}
                 />
               )}
             </CardBody>

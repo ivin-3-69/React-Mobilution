@@ -11,7 +11,6 @@ import AuthContext from "store/auth-context";
 
 const useStyles = makeStyles(styles);
 
-
 function App() {
   const [resp, setResp] = useState();
   const [LoggedIn, setIsLoggedIn] = useState(false);

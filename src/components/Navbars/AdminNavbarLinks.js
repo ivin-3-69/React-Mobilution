@@ -137,7 +137,6 @@ export default function HeaderLinks(props) {
                     >
                       {rtlActive ? "الإعدادات" : "Settings"}
                     </MenuItem>
-                    <Divider light />
                     <MenuItem onClick={ctx.logout} className={dropdownItem}>
                       {rtlActive ? "الخروج" : "Log out"}
                     </MenuItem>

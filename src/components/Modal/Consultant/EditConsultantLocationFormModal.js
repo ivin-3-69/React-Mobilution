@@ -194,6 +194,8 @@ export default function ModalForm(props) {
         paidLeaves: event.target[8].value,
 
         holidayPayable: checked ? "Y" : "N",
+        
+        overtimeBillable: "Y",
 
         billType: chosenbilltype,
 

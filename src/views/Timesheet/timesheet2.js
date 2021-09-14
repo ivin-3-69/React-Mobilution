@@ -42,13 +42,10 @@ export default function Calendar(props) {
   };
   var items1 = [];
   var items2 = [];
-  function combine() {
-    items1.push(items2);
-    setEvents(items1);
-  }
+
   function hello2() {
     axios
-      .get(`/holiday/byclientlocation?id=208`, {
+      .get(`/holiday/byclientlocation?id=${props.location}`, {
         headers: {
           Authorization: `Bearer ${props.header.token}`,
         },
@@ -61,17 +58,34 @@ export default function Calendar(props) {
           if (transData2[0]) {
             for (var i = 0; i < transData2.length; i++) {
               items2.push({
-                title: 0,
-                start: new Date(transData2[i][2]),
-                end: new Date(transData2[i][2]),
-                color: "azure",
+                id: 7,
+                date: transData2[i][2],
+                hours: 0,
+                dayType: "H",
               });
             }
             setitem2(items2);
           }
         }
       })
-      .then(combine());
+      .then((response) => {
+        axios({
+          method: "post",
+          url: "/timesheet/save",
+          data: {
+            consultantId: props.clientId,
+            month: props.BillMonthNumber,
+            year: props.billyear,
+            isFinalised: "Y",
+            list: items2,
+          },
+          headers: {
+            Authorization: `Bearer ${props.header.token}`,
+          },
+        }).then((response) => {
+          hello();
+        });
+      });
   }
   function hello() {
     axios
@@ -127,17 +141,14 @@ export default function Calendar(props) {
             setitem1(items1);
           }
         }
-      })
-      .then(hello2());
+      });
   }
 
   useEffect(() => {
-    hello();
-    // hello2();
+    hello2();
   }, []);
   useEffect(() => {
-    // console.log();
-    setEvents([...itemm1, ...itemm2]);
+    setEvents(itemm1);
   }, [itemm1, itemm2]);
   const addNewEventAlert = (slotInfo) => {
     setAlert(
@@ -147,7 +158,9 @@ export default function Calendar(props) {
         placeholder={"Enter number of hours worked"}
         openAnim={false}
         style={{ display: "block", marginTop: "-100px" }}
-        title="Input something"
+        title={`${slotInfo.start.getDate()}-${
+          slotInfo.start.getMonth() + 1
+        }-${slotInfo.start.getFullYear()}`}
         onConfirm={(e) => {
           if (e >= 0 && e % 0.5 === 0) {
             addNewEvent(e, slotInfo);
@@ -260,8 +273,17 @@ export default function Calendar(props) {
     event.color
       ? (backgroundColor = backgroundColor + event.color)
       : (backgroundColor = backgroundColor + "default");
+    var style = {
+      borderRadius: "0px",
+      color: "black",
+      border: "0px",
+      display: "block",
+      fontSize:"20px"
+      
+    };
     return {
       className: backgroundColor,
+      style: style,
     };
   };
   return (
@@ -294,7 +316,15 @@ export default function Calendar(props) {
                     new Date(`${props.billyear}-${props.BillMonthNumber}-01`)
                   }
                   onSelectEvent={(event) => selectedEvent(event)}
-                  onSelectSlot={(slotInfo) => addNewEventAlert(slotInfo)}
+                  onSelectSlot={(slotInfo) => {
+                    if (
+                      slotInfo.start <= new Date() &&
+                      slotInfo.start <= new Date(props.endDate) &&
+                      slotInfo.start >= new Date(props.startDate)
+                    ) {
+                      addNewEventAlert(slotInfo);
+                    }
+                  }}
                   eventPropGetter={eventColors}
                   components={{
                     toolbar: RBCToolbar,

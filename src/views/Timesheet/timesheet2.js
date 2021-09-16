@@ -1,19 +1,25 @@
 /*eslint-disable*/
 import React, { useState, useEffect } from "react";
+
 // import axios from "axios";
 import { Calendar as BigCalendar, momentLocalizer } from "react-big-calendar";
 // dependency plugin for react-big-calendar
+import ChartistGraph from "react-chartist";
 import moment from "moment";
 import axios from "axios";
 import RBCToolbar from "./CustomToolbar.js";
+import Timeline from "@material-ui/icons/Timeline";
+
+import { faHome, faCircle } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 // react component used to create alerts
 import SweetAlert from "react-bootstrap-sweetalert";
 
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
-
 // core components
+import Heading from "components/Heading/Heading.js";
 import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
 import Button from "components/CustomButtons/Button.js";
@@ -22,6 +28,7 @@ import CardBody from "components/Card/CardBody.js";
 import CardIcon from "components/Card/CardIcon.js";
 import CardHeader from "components/Card/CardHeader.js";
 import ArrowBack from "@material-ui/icons/ArrowBack";
+import CardFooter from "components/Card/CardFooter.js";
 
 import styles from "assets/jss/material-dashboard-pro-react/components/buttonStyle.js";
 
@@ -104,7 +111,14 @@ export default function Calendar(props) {
           // setClientData(transData);
           if (transData[0]) {
             for (var i = 0; i < transData.length; i++) {
-              if (transData[i][5] === "H") {
+              if (transData[i][5] === "H" && transData[i][4] === 0) {
+                items1.push({
+                  title: "H",
+                  start: new Date(transData[i][3]),
+                  end: new Date(transData[i][3]),
+                  color: "azure",
+                });
+              } else if (transData[i][5] === "H" && transData[i][4] > 0) {
                 items1.push({
                   title: transData[i][4],
                   start: new Date(transData[i][3]),
@@ -150,7 +164,7 @@ export default function Calendar(props) {
   useEffect(() => {
     setEvents(itemm1);
   }, [itemm1, itemm2]);
-  const addNewEventAlert = (slotInfo) => {
+  const addNewEventAlert = (slotInfo, safe) => {
     setAlert(
       <SweetAlert
         input
@@ -162,17 +176,30 @@ export default function Calendar(props) {
           slotInfo.start.getMonth() + 1
         }-${slotInfo.start.getFullYear()}`}
         onConfirm={(e) => {
-          if (e >= 0 && e % 0.5 === 0) {
-            addNewEvent(e, slotInfo);
-            setflag(false);
-          } else if (e === "L" || e === "l") {
-            addLeaveEvent(e, slotInfo);
-            setflag(false);
-          } else if (e === "H" || e === "h") {
-            addHolidayEvent(e, slotInfo);
-            setflag(false);
+          if (safe == true) {
+            if (e >= 0 && e % 0.5 === 0 && e <= 24) {
+              addNewEvent(e, slotInfo);
+              setflag(false);
+            } else if (e === "L" || e === "l") {
+              addLeaveEvent(e, slotInfo);
+              setflag(false);
+            } else if (e === "H" || e === "h") {
+              addHolidayEvent(e, slotInfo);
+              setflag(false);
+            } else {
+              setflag(true);
+            }
           } else {
-            setflag(true);
+            if (e >= 0 && e % 0.5 === 0 && e <= 24) {
+              addNewEvent(e, slotInfo, true);
+              setflag(false);
+            } else if (e === "H" || e === "h") {
+              addNewEvent(0, slotInfo, true);
+              setAlert(null);
+            } else if (e === "L" || e === "l") {
+              addNewEvent(0, slotInfo, true);
+              setAlert(null);
+            }
           }
         }}
         onCancel={() => hideAlert()}
@@ -181,7 +208,14 @@ export default function Calendar(props) {
       ></SweetAlert>
     );
   };
-  const addNewEvent = (e, slotInfo) => {
+  const addNewEvent = (e, slotInfo, isHoliday) => {
+    var daaytype;
+    if (isHoliday) {
+      daaytype = "H";
+      // console.log("caution");
+    } else {
+      daaytype = "B";
+    }
     axios({
       method: "post",
       url: "/timesheet/save",
@@ -197,7 +231,7 @@ export default function Calendar(props) {
               slotInfo.start.getMonth() + 1
             }-${slotInfo.start.getDate()}`,
             hours: e,
-            dayType: "B",
+            dayType: daaytype,
           },
         ],
       },
@@ -278,8 +312,9 @@ export default function Calendar(props) {
       color: "black",
       border: "0px",
       display: "block",
-      fontSize:"20px"
-      
+      fontSize: "20px",
+      paddingTop: "15px",
+      paddingBottom: "15px",
     };
     return {
       className: backgroundColor,
@@ -315,16 +350,25 @@ export default function Calendar(props) {
                   defaultDate={
                     new Date(`${props.billyear}-${props.BillMonthNumber}-01`)
                   }
-                  onSelectEvent={(event) => selectedEvent(event)}
-                  onSelectSlot={(slotInfo) => {
-                    if (
+                  onSelectEvent={(slotInfo) => {
+                    if (slotInfo.color == "azure") {
+                      console.log(slotInfo);
+                      if (
+                        slotInfo.start <= new Date() &&
+                        slotInfo.start <= new Date(props.endDate) &&
+                        slotInfo.start >= new Date(props.startDate)
+                      ) {
+                        addNewEventAlert(slotInfo, false);
+                      }
+                    } else if (
                       slotInfo.start <= new Date() &&
                       slotInfo.start <= new Date(props.endDate) &&
                       slotInfo.start >= new Date(props.startDate)
                     ) {
-                      addNewEventAlert(slotInfo);
+                      addNewEventAlert(slotInfo, true);
                     }
                   }}
+                  onSelectSlot={(slotInfo) => {}}
                   eventPropGetter={eventColors}
                   components={{
                     toolbar: RBCToolbar,
@@ -347,6 +391,26 @@ export default function Calendar(props) {
                 />
               )}
             </CardBody>
+            <CardFooter stats className={classes.cardFooter}>
+              <h6 className={classes.legendTitle}>Legend</h6>
+              <FontAwesomeIcon icon={faCircle} style={{ color: "#1caaba" }} />
+              Holiday
+              <FontAwesomeIcon
+                icon={faCircle}
+                style={{ color: "#eda915", marginLeft: "30px" }}
+              />
+              Leave
+              <FontAwesomeIcon
+                icon={faCircle}
+                style={{ color: "red", marginLeft: "30px" }}
+              />
+              Weekend
+              <FontAwesomeIcon
+                icon={faCircle}
+                style={{ color: "gray", marginLeft: "30px" }}
+              />
+              Weekdays
+            </CardFooter>
           </Card>
         </GridItem>
       </GridContainer>

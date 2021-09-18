@@ -43,7 +43,7 @@ export default function Calendar(props) {
   const [itemm2, setitem2] = useState([]);
   const [alert, setAlert] = useState(null);
   const [flag, setflag] = useState(false);
-  const [HolidayData, setHolidayData] = useState([]);
+  const [hours, setHours] = useState([]);
   const selectedEvent = (event) => {
     window.alert(event.title);
   };
@@ -105,10 +105,10 @@ export default function Calendar(props) {
         }
       )
       .then(function (response) {
+        setHours(response.data.payload.totalWorkingHours);
         const data = response.data.payload.list;
         if (data) {
           const transData = data.map((item) => Object.values(item));
-          // setClientData(transData);
           if (transData[0]) {
             for (var i = 0; i < transData.length; i++) {
               if (transData[i][5] === "H" && transData[i][4] === 0) {
@@ -177,25 +177,19 @@ export default function Calendar(props) {
         }-${slotInfo.start.getFullYear()}`}
         onConfirm={(e) => {
           if (safe == true) {
-            if (e >= 0 && e % 0.5 === 0 && e <= 24) {
+            if (e > 0 && e % 0.5 === 0 && e <= 24) {
               addNewEvent(e, slotInfo);
               setflag(false);
             } else if (e === "L" || e === "l") {
               addLeaveEvent(e, slotInfo);
               setflag(false);
-            } else if (e === "H" || e === "h") {
-              addHolidayEvent(e, slotInfo);
-              setflag(false);
             } else {
               setflag(true);
             }
           } else {
-            if (e >= 0 && e % 0.5 === 0 && e <= 24) {
+            if (e > 0 && e % 0.5 === 0 && e <= 24) {
               addNewEvent(e, slotInfo, true);
               setflag(false);
-            } else if (e === "H" || e === "h") {
-              addNewEvent(0, slotInfo, true);
-              setAlert(null);
             } else if (e === "L" || e === "l") {
               addNewEvent(0, slotInfo, true);
               setAlert(null);
@@ -392,24 +386,40 @@ export default function Calendar(props) {
               )}
             </CardBody>
             <CardFooter stats className={classes.cardFooter}>
-              <h6 className={classes.legendTitle}>Legend</h6>
-              <FontAwesomeIcon icon={faCircle} style={{ color: "#1caaba" }} />
-              Holiday
-              <FontAwesomeIcon
-                icon={faCircle}
-                style={{ color: "#eda915", marginLeft: "30px" }}
-              />
-              Leave
-              <FontAwesomeIcon
-                icon={faCircle}
-                style={{ color: "red", marginLeft: "30px" }}
-              />
-              Weekend
-              <FontAwesomeIcon
-                icon={faCircle}
-                style={{ color: "gray", marginLeft: "30px" }}
-              />
-              Weekdays
+              <div style={{ float: "left" }}>
+                <h6 className={classes.legendTitle}>Legend</h6>
+                <FontAwesomeIcon icon={faCircle} style={{ color: "#1caaba" }} />
+                Holiday
+                <FontAwesomeIcon
+                  icon={faCircle}
+                  style={{ color: "#eda915", marginLeft: "30px" }}
+                />
+                Leave
+                <FontAwesomeIcon
+                  icon={faCircle}
+                  style={{ color: "red", marginLeft: "30px" }}
+                />
+                Weekend
+                <FontAwesomeIcon
+                  icon={faCircle}
+                  style={{ color: "gray", marginLeft: "30px" }}
+                />
+                Weekdays
+              </div>
+              <div>
+                <h5
+                  className={classes.legendTitle}
+                  style={{ color: "#345282", paddingLeft: "100px" }}
+                >
+                  Enter 'L' for Leave
+                </h5>
+                <h4
+                  className={classes.legendTitle}
+                  style={{ color: "#345282", paddingLeft: "100px" }}
+                >
+                  Total Hours Worked:{hours}
+                </h4>
+              </div>
             </CardFooter>
           </Card>
         </GridItem>

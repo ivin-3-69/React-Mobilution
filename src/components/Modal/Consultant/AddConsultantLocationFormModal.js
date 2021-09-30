@@ -112,76 +112,83 @@ export default function ModalForm(props) {
 
   const submitHandler = (event) => {
     event.preventDefault();
-    console.log(event.target[7].value);
+    if (
+      event.target[0].value &&
+      event.target[1].value &&
+      event.target[2].value &&
+      event.target[5].value &&
+      event.target[4].value &&
+      event.target[8].value
+    ) {
+      var date = new Date(event.target[0].value);
+      if (date.getDate() < 10) {
+        var newdate = `0${date.getDate()}`;
+      } else {
+        newdate = date.getDate();
+      }
 
-    var date = new Date(event.target[0].value);
-    if (date.getDate() < 10) {
-      var newdate = `0${date.getDate()}`;
-    } else {
-      newdate = date.getDate();
-    }
+      if (date.getMonth() + 1 < 10) {
+        var newmonth = `0${date.getMonth() + 1}`;
+      } else {
+        newmonth = date.getMonth() + 1;
+      }
 
-    if (date.getMonth() + 1 < 10) {
-      var newmonth = `0${date.getMonth() + 1}`;
-    } else {
-      newmonth = date.getMonth() + 1;
-    }
+      var startdate = `${date.getFullYear()}-${newmonth}-${newdate}`;
 
-    var startdate = `${date.getFullYear()}-${newmonth}-${newdate}`;
+      var date2 = new Date(event.target[1].value);
+      if (date2.getDate() < 10) {
+        var newdate2 = `0${date2.getDate()}`;
+      } else {
+        newdate2 = date2.getDate();
+      }
 
-    var date2 = new Date(event.target[1].value);
-    if (date2.getDate() < 10) {
-      var newdate2 = `0${date2.getDate()}`;
-    } else {
-      newdate2 = date2.getDate();
-    }
+      if (date2.getMonth() + 1 < 10) {
+        var newmonth2 = `0${date2.getMonth() + 1}`;
+      } else {
+        newmonth2 = date2.getMonth() + 1;
+      }
 
-    if (date2.getMonth() + 1 < 10) {
-      var newmonth2 = `0${date2.getMonth() + 1}`;
-    } else {
-      newmonth2 = date2.getMonth() + 1;
-    }
-
-    var enddate = `${date2.getFullYear()}-${newmonth2}-${newdate2}`;
-    axios({
-      method: "post",
-      url: "/assign/clientlocation",
-      data: {
-        consultantId: props.id,
-
-        startDate: startdate,
-
-        endDate: enddate,
-
-        clientLocationId: chosenclientlocation,
-
-        billRate: event.target[4].value,
-
-        paidLeaves: event.target[8].value,
-
-        holidayPayable: checked ? "Y" : "N",
-
-        overtimeBillable: "Y",
-
-        billType: chosenbilltype,
-
-        hoursPerDay: event.target[5].value,
-
-        poDetails: {
-          poNo: event.target[2].value,
+      var enddate = `${date2.getFullYear()}-${newmonth2}-${newdate2}`;
+      axios({
+        method: "post",
+        url: "/assign/clientlocation",
+        data: {
+          consultantId: props.id,
 
           startDate: startdate,
 
           endDate: enddate,
+
+          clientLocationId: chosenclientlocation,
+
+          billRate: event.target[4].value,
+
+          paidLeaves: event.target[8].value,
+
+          holidayPayable: checked ? "Y" : "N",
+
+          overtimeBillable: "Y",
+
+          billType: chosenbilltype,
+
+          hoursPerDay: event.target[5].value,
+
+          poDetails: {
+            poNo: event.target[2].value,
+
+            startDate: startdate,
+
+            endDate: enddate,
+          },
         },
-      },
-      headers: {
-        Authorization: `Bearer ${props.token.token}`,
-      },
-    }).then((response) => {
-      props.hello();
-    });
-    props.love();
+        headers: {
+          Authorization: `Bearer ${props.token.token}`,
+        },
+      }).then((response) => {
+        props.hello();
+      });
+      props.love();
+    }
   };
   return (
     <GridContainer>

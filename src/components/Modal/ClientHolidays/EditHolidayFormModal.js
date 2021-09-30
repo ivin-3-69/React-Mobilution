@@ -23,30 +23,32 @@ export default function ModalForm(props) {
   const classes = useStyles();
   const submitHandler = (event) => {
     event.preventDefault();
-    const holiday = new Date(event.target[0].value);
-    const holidate = `${holiday.getFullYear()}-${
-      holiday.getMonth() + 1
-    }-${holiday.getDate()}`;
+    if (event.target[0].value && event.target[1].value) {
+      const holiday = new Date(event.target[0].value);
+      const holidate = `${holiday.getFullYear()}-${
+        holiday.getMonth() + 1
+      }-${holiday.getDate()}`;
 
-    axios({
-      method: "post",
-      url: "/holiday/save",
-      data: {
-        id: props.prop[0],
-        clientLocationId: props.id,
-        date: holidate,
-        description: event.target[1].value,
-        holidaysEntered: props.prop[5],
-        year: props.prop[6],
-      },
-      headers: {
-        Authorization: `Bearer ${props.token.token}`,
-      },
-    }).then((response) => {
-      props.hello();
-    });
+      axios({
+        method: "post",
+        url: "/holiday/save",
+        data: {
+          id: props.prop[0],
+          clientLocationId: props.id,
+          date: holidate,
+          description: event.target[1].value,
+          holidaysEntered: props.prop[5],
+          year: props.prop[6],
+        },
+        headers: {
+          Authorization: `Bearer ${props.token.token}`,
+        },
+      }).then((response) => {
+        props.hello();
+      });
 
-    props.love();
+      props.love();
+    }
   };
   return (
     <GridContainer>

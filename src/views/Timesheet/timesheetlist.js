@@ -274,7 +274,7 @@ export default function Consultant(props) {
                             <div className={classes.right}>
                               <Tooltip
                                 id="tooltip-top"
-                                title="consultant Timesheet"
+                                title="timesheet details"
                                 placement="top"
                                 classes={{ tooltip: classes.tooltip }}
                               >

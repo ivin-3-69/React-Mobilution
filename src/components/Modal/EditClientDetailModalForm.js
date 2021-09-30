@@ -24,6 +24,8 @@ export default function ModalForm(props) {
   const [usernamelist, setUsernamelist] = useState(["ivin"]);
   const [useridlist, setUseridlist] = useState([1]);
   const [gstflag, setgstflag] = useState(null);
+  const [numberflag, setnumberflag] = useState(null);
+  const [panflag, setpanflag] = useState(null);
   useEffect(() => {
     axios({
       method: "get",
@@ -131,7 +133,26 @@ export default function ModalForm(props) {
     let flag = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(
       event.target[1].value
     );
-    if (flag) {
+    let flag2 = /^[0-9]{10}$/.test(event.target[5].value);
+    let flag3 = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(event.target[5].value);
+    let flag4 =
+      event.target[0].value &&
+      event.target[1].value &&
+      event.target[2].value &&
+      event.target[4].value &&
+      event.target[5].value &&
+      event.target[6].value &&
+      event.target[9].value &&
+      event.target[10].value &&
+      event.target[11].value &&
+      event.target[12].value &&
+      event.target[13].value &&
+      event.target[15].value &&
+      event.target[16].value &&
+      event.target[17].value &&
+      event.target[18].value &&
+      event.target[19].value;
+    if (flag1 && flag2 && flag3 && flag4) {
       axios({
         method: "post",
         url: "/clientlocation/save",
@@ -181,12 +202,11 @@ export default function ModalForm(props) {
       }).then((response) => {
         props.hello();
       });
-      setgstflag(false);
       props.love();
-    } else {
-      setgstflag(true);
-      console.log("gst invalid");
     }
+    setgstflag(!flag1);
+    setnumberflag(!flag2);
+    setpanflag(!flag3);
   };
   return (
     <GridContainer>
@@ -222,6 +242,7 @@ export default function ModalForm(props) {
                   <CustomInput
                     labelText="Pan No"
                     id="panNo"
+                    error={panflag}
                     formControlProps={{
                       fullWidth: true,
                     }}
@@ -255,6 +276,7 @@ export default function ModalForm(props) {
                   <CustomInput
                     labelText="Contact No"
                     id="ContactNo"
+                    error={numberflag}
                     formControlProps={{
                       fullWidth: true,
                     }}

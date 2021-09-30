@@ -125,18 +125,6 @@ export default function HeaderLinks(props) {
               <Paper className={classes.dropdown}>
                 <ClickAwayListener onClickAway={handleCloseProfile}>
                   <MenuList role="menu">
-                    <MenuItem
-                      onClick={handleCloseProfile}
-                      className={dropdownItem}
-                    >
-                      {rtlActive ? "الملف الشخصي" : "Profile"}
-                    </MenuItem>
-                    <MenuItem
-                      onClick={handleCloseProfile}
-                      className={dropdownItem}
-                    >
-                      {rtlActive ? "الإعدادات" : "Settings"}
-                    </MenuItem>
                     <MenuItem onClick={ctx.logout} className={dropdownItem}>
                       {rtlActive ? "الخروج" : "Log out"}
                     </MenuItem>

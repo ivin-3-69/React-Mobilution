@@ -6,6 +6,7 @@ import Client from "views/Clients/Clients.js";
 import Consultant from "views/Consultants/consultants.js";
 import BillableMonth from "views/BillableMonth/BillableMonth.js";
 import Timesheet from "views/Timesheet/timesheetlist";
+import Invoice from "views/Invoice/invoice";
 // @material-ui/icons
 import Apps from "@material-ui/icons/Apps";
 import DashboardIcon from "@material-ui/icons/Dashboard";
@@ -17,14 +18,6 @@ import Timeline from "@material-ui/icons/Timeline";
 import WidgetsIcon from "@material-ui/icons/Widgets";
 
 var dashRoutes = [
-  {
-    path: "/dashboard",
-    name: "Dashboard",
-    rtlName: "لوحة القيادة",
-    icon: DashboardIcon,
-    component: Dashboard,
-    layout: "/admin",
-  },
   {
     path: "/client",
     name: "Client",
@@ -51,6 +44,13 @@ var dashRoutes = [
     name: "Timesheet",
     icon: DashboardIcon,
     component: Timesheet,
+    layout: "/admin",
+  },
+  {
+    path: "/invoice",
+    name: "Invoice",
+    icon: DashboardIcon,
+    component: Invoice,
     layout: "/admin",
   },
 ];

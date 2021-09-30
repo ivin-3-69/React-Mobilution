@@ -1,6 +1,6 @@
 /*eslint-disable*/
 
-import React from "react";
+import React, { useState } from "react";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 import axios from "axios";
@@ -16,32 +16,46 @@ import styles from "assets/jss/material-dashboard-pro-react/views/regularFormsSt
 const useStyles = makeStyles(styles);
 
 export default function ModalForm(props) {
+  const [validationflag, setvalidationflag] = useState(null);
+
   const submitHandler = (event) => {
     event.preventDefault();
-    console.log(event.target[4].value);
-    axios({
-      method: "post",
-      url: "/consultant/save",
-      data: {
-        id: props.prop[0],
+    let flag = /^[0-9]{10}$/.test(event.target[4].value);
+    let flag2 =
+      event.target[0].value &&
+      event.target[1].value &&
+      event.target[2].value &&
+      event.target[3].value &&
+      event.target[4].value;
+    if (flag && flag2) {
+      console.log(event.target[4].value);
+      axios({
+        method: "post",
+        url: "/consultant/save",
+        data: {
+          id: props.prop[0],
 
-        firstName: event.target[0].value,
+          firstName: event.target[0].value,
 
-        lastName: event.target[1].value,
+          lastName: event.target[1].value,
 
-        employeeId: event.target[2].value,
+          employeeId: event.target[2].value,
 
-        mobile: event.target[4].value,
+          mobile: event.target[4].value,
 
-        email: event.target[3].value,
-      },
-      headers: {
-        Authorization: `Bearer ${props.token.token}`,
-      },
-    }).then((response) => {
-      props.hello();
-    });
-    props.love();
+          email: event.target[3].value,
+        },
+        headers: {
+          Authorization: `Bearer ${props.token.token}`,
+        },
+      }).then((response) => {
+        props.hello();
+      });
+      setvalidationflag(false);
+      props.love();
+    } else {
+      setvalidationflag(true);
+    }
   };
   return (
     <GridContainer>
@@ -90,12 +104,13 @@ export default function ModalForm(props) {
                 }}
                 inputProps={{
                   defaultValue: `${props.prop[5]}`,
-                  type: "text",
+                  type: "email",
                 }}
               />
               <CustomInput
                 labelText="Contact No"
                 id="phone"
+                error={validationflag}
                 formControlProps={{
                   fullWidth: true,
                 }}

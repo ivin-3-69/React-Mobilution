@@ -1,9 +1,10 @@
 /*eslint-disable*/
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import AuthContext from "store/auth-context";
 import axios from "axios";
 import { makeStyles } from "@material-ui/core/styles";
+import { tooltip } from "assets/jss/material-dashboard-pro-react.js";
 import Tooltip from "@material-ui/core/Tooltip";
-
 import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
 import Table from "components/Table/Table.js";
@@ -25,6 +26,7 @@ import EditModal from "components/Modal/Consultant/EditConsultantLoactionModal";
 const useStyles = makeStyles(styles);
 
 const ClientDetail = (props) => {
+  const ctx = useContext(AuthContext);
   const [ClientData, setClientData] = useState([]);
   const [Response, setResponse] = useState(false);
   const [lastDate, setlastDate] = useState("1 Jan 2019");
@@ -36,15 +38,19 @@ const ClientDetail = (props) => {
         },
       })
       .then(function (response) {
-        const data = response.data.payload;
-        if (data) {
-          if (data[0]) {
-            const transData = data.map((item) => Object.values(item));
-            const ddata = transData.map((item) =>
-              item.filter((dada) => dada !== null)
-            );
-            setClientData(ddata);
-            setlastDate(data[0].endDate);
+        if (response.status === 401) {
+          ctx.logout();
+        } else {
+          const data = response.data.payload;
+          if (data) {
+            if (data[0]) {
+              const transData = data.map((item) => Object.values(item));
+              const ddata = transData.map((item) =>
+                item.filter((dada) => dada !== null)
+              );
+              setClientData(ddata);
+              setlastDate(data[0].endDate);
+            }
           }
         }
 
@@ -64,7 +70,11 @@ const ClientDetail = (props) => {
         Authorization: `Bearer ${props.header.token}`,
       },
     }).then((response) => {
-      hello();
+      if (response.status === 401) {
+        ctx.logout();
+      } else {
+        hello();
+      }
     });
   };
 
@@ -109,7 +119,7 @@ const ClientDetail = (props) => {
                         <div className={classes.right}>
                           <Tooltip
                             id="tooltip-top"
-                            title="edit consultant"
+                            title="edit"
                             placement="top"
                             classes={{ tooltip: classes.tooltip }}
                           >

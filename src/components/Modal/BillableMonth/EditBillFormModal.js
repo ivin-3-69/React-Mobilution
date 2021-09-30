@@ -23,6 +23,8 @@ export default function ModalForm(props) {
   const [daysflag, setdaysflag] = useState(null);
   const [startdatee, setstartdate] = useState(new Date(`${props.prop[6]}`));
   const [enddatee, setenddate] = useState(new Date(`${props.prop[7]}`));
+  const [holidayss, setholidayss] = useState();
+  const [workingdayss, setworkingdayss] = useState(props.prop[9]);
 
   function getDifferenceInDays(date1, date2) {
     const diffInMs = Math.abs(date2 - date1);
@@ -42,6 +44,23 @@ export default function ModalForm(props) {
     }
     return count;
   }
+
+  useEffect(() => {
+    axios
+      .get(
+        `/holiday/count/byrange?id=${
+          props.prop[2]
+        }&startdate=${startdatee.getFullYear()}-${startdatee.getMonth()}-${startdatee.getDate()}&enddate=${enddatee.getFullYear()}-${enddatee.getMonth()}-${enddatee.getDate()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${props.token.token}`,
+          },
+        }
+      )
+      .then(function (response) {
+        setholidayss(response.data.payload);
+      });
+  }, [startdatee, enddatee]);
 
   const submitHandler = (event) => {
     event.preventDefault();
@@ -79,9 +98,9 @@ export default function ModalForm(props) {
     const workingdayss = Number(event.target[2].value);
     const holidays = Number(event.target[3].value);
 
-    // console.log(workingdayss, holidays);
+    // console.log(workingdayss, holidayss);
     // console.log(totaldayss, weekendss);
-    if (workingdayss + holidays + weekendss === totaldayss) {
+    if (workingdayss + holidayss + weekendss <= totaldayss) {
       axios({
         method: "post",
         url: "/billablemonth/save",
@@ -99,7 +118,7 @@ export default function ModalForm(props) {
 
             weekends: weekendss,
 
-            holidays: holidays,
+            holidays: totaldayss - weekendss - workingdayss,
 
             workingDays: workingdayss,
 
@@ -122,7 +141,7 @@ export default function ModalForm(props) {
       setdaysflag(false);
     } else {
       setdaysflag(true);
-      console.log("days input error");
+      // console.log("days input error");
     }
   };
   return (
@@ -140,7 +159,6 @@ export default function ModalForm(props) {
                   initialValue={new Date(`${props.prop[6]}`)}
                   onChange={(event) => {
                     setstartdate((prev) => event._d);
-                    // calculateDays();
                   }}
                 />
               </FormControl>
@@ -154,75 +172,66 @@ export default function ModalForm(props) {
                   initialValue={new Date(`${props.prop[7]}`)}
                   onChange={(event) => {
                     setenddate((prev) => event._d);
-                    // calculateDays();
                   }}
                 />
               </FormControl>
-
-              <CustomInput
-                labelText="Working Daya"
-                id="WorkDays"
-                error={daysflag}
-                formControlProps={{
-                  fullWidth: true,
-                }}
-                inputProps={{
-                  type: "number",
-                  defaultValue: props.prop[9],
-                }}
-              />
-
-              <CustomInput
-                labelText="Holidays"
-                id="holidays"
-                error={daysflag}
-                formControlProps={{
-                  fullWidth: true,
-                }}
-                inputProps={{
-                  type: "number",
-                  defaultValue: props.prop[12],
-                }}
-              />
-              {/* <CustomInput
-                labelText="Total Days"
-                id="totalDays"
-                formControlProps={{
-                  fullWidth: true,
-                }}
-                inputProps={{
-                  type: "number",
-                  disabled: true,
-                  defaultValue: props.prop[12],
-                }}
-              />
-              <CustomInput
-                labelText="Weekends"
-                id="weekrnds"
-                formControlProps={{
-                  fullWidth: true,
-                }}
-                inputProps={{
-                  type: "number",
-                  disabled: true,
-                  defaultValue: props.prop[12],
-                }}
-              /> */}
-              {startdatee && enddatee && (
-                <>
-                  {" "}
-                  <p>
-                    Total days :{" "}
-                    {(enddatee - startdatee) / (1000 * 60 * 60 * 24) + 1}{" "}
-                  </p>
-                  <p>
-                    weekends :{" "}
-                    {(enddatee - startdatee) / (1000 * 60 * 60 * 24) +
+              {(enddatee - startdatee) / (1000 * 60 * 60 * 24) +
+                1 -
+                ((enddatee - startdatee) / (1000 * 60 * 60 * 24) +
+                  1 -
+                  getBusinessDatesCount(startdatee, enddatee)) -
+                holidayss >=
+                0 && (
+                <CustomInput
+                  labelText="Working Days"
+                  id="WorkDays"
+                  error={daysflag}
+                  formControlProps={{
+                    fullWidth: true,
+                  }}
+                  inputProps={{
+                    onChange: (event) => {
+                      setworkingdayss(event.target.value);
+                    },
+                    type: "number",
+                    defaultValue:
+                      (enddatee - startdatee) / (1000 * 60 * 60 * 24) +
                       1 -
-                      getBusinessDatesCount(startdatee, enddatee)}
-                  </p>
-                </>
+                      ((enddatee - startdatee) / (1000 * 60 * 60 * 24) +
+                        1 -
+                        getBusinessDatesCount(startdatee, enddatee)) -
+                      holidayss,
+                  }}
+                />
               )}
+              {startdatee.getDate() >= 0 &&
+                enddatee.getDate() >= 0 &&
+                holidayss >= 0 && (
+                  <>
+                    {" "}
+                    <p>
+                      Total days :{" "}
+                      {(enddatee - startdatee) / (1000 * 60 * 60 * 24) + 1}
+                    </p>
+                    <p>
+                      Weekends :{" "}
+                      {(enddatee - startdatee) / (1000 * 60 * 60 * 24) +
+                        1 -
+                        getBusinessDatesCount(startdatee, enddatee)}
+                    </p>
+                    <p>Client Holidays : {holidayss} </p>
+                    <p>
+                      leave :{" "}
+                      {(enddatee - startdatee) / (1000 * 60 * 60 * 24) +
+                        1 -
+                        ((enddatee - startdatee) / (1000 * 60 * 60 * 24) +
+                          1 -
+                          getBusinessDatesCount(startdatee, enddatee)) -
+                        holidayss -
+                        workingdayss}
+                    </p>
+                  </>
+                )}
 
               <Button type="submit" color="rose">
                 Submit

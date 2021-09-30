@@ -1,6 +1,6 @@
 /*eslint-disable*/
-import React, { useState, useEffect } from "react";
-
+import React, { useState, useEffect, useContext } from "react";
+import AuthContext from "store/auth-context";
 // import axios from "axios";
 import { Calendar as BigCalendar, momentLocalizer } from "react-big-calendar";
 // dependency plugin for react-big-calendar
@@ -37,6 +37,7 @@ const localizer = momentLocalizer(moment);
 const useStyles = makeStyles(styles);
 
 export default function Calendar(props) {
+  const ctx = useContext(AuthContext);
   const classes = useStyles();
   const [events, setEvents] = useState([]);
   const [itemm1, setitem1] = useState([]);
@@ -58,20 +59,24 @@ export default function Calendar(props) {
         },
       })
       .then(function (response) {
-        const data2 = response.data.payload;
-        if (data2) {
-          const transData2 = data2.map((item) => Object.values(item));
-          // console.log(data2[1][2], transData2[1][2]);
-          if (transData2[0]) {
-            for (var i = 0; i < transData2.length; i++) {
-              items2.push({
-                id: 7,
-                date: transData2[i][2],
-                hours: 0,
-                dayType: "H",
-              });
+        if (response.status === 401) {
+          ctx.logout();
+        } else {
+          const data2 = response.data.payload;
+          if (data2) {
+            const transData2 = data2.map((item) => Object.values(item));
+            // console.log(data2[1][2], transData2[1][2]);
+            if (transData2[0]) {
+              for (var i = 0; i < transData2.length; i++) {
+                items2.push({
+                  id: 7,
+                  date: transData2[i][2],
+                  hours: 0,
+                  dayType: "H",
+                });
+              }
+              setitem2(items2);
             }
-            setitem2(items2);
           }
         }
       })
@@ -90,7 +95,11 @@ export default function Calendar(props) {
             Authorization: `Bearer ${props.header.token}`,
           },
         }).then((response) => {
-          hello();
+          if (response.status === 401) {
+            ctx.logout();
+          } else {
+            hello();
+          }
         });
       });
   }
@@ -105,54 +114,58 @@ export default function Calendar(props) {
         }
       )
       .then(function (response) {
-        setHours(response.data.payload.totalWorkingHours);
-        const data = response.data.payload.list;
-        if (data) {
-          const transData = data.map((item) => Object.values(item));
-          if (transData[0]) {
-            for (var i = 0; i < transData.length; i++) {
-              if (transData[i][5] === "H" && transData[i][4] === 0) {
-                items1.push({
-                  title: "H",
-                  start: new Date(transData[i][3]),
-                  end: new Date(transData[i][3]),
-                  color: "azure",
-                });
-              } else if (transData[i][5] === "H" && transData[i][4] > 0) {
-                items1.push({
-                  title: transData[i][4],
-                  start: new Date(transData[i][3]),
-                  end: new Date(transData[i][3]),
-                  color: "azure",
-                });
-              } else if (transData[i][5] === "L") {
-                items1.push({
-                  title: transData[i][4],
-                  start: new Date(transData[i][3]),
-                  end: new Date(transData[i][3]),
-                  color: "orange",
-                });
-              } else {
-                if (
-                  new Date(transData[i][3]).getDay() == 6 ||
-                  new Date(transData[i][3]).getDay() == 0
-                ) {
+        if (response.status === 401) {
+          ctx.logout();
+        } else {
+          setHours(response.data.payload.totalWorkingHours);
+          const data = response.data.payload.list;
+          if (data) {
+            const transData = data.map((item) => Object.values(item));
+            if (transData[0]) {
+              for (var i = 0; i < transData.length; i++) {
+                if (transData[i][5] === "H" && transData[i][4] === 0) {
+                  items1.push({
+                    title: "H",
+                    start: new Date(transData[i][3]),
+                    end: new Date(transData[i][3]),
+                    color: "azure",
+                  });
+                } else if (transData[i][5] === "H" && transData[i][4] > 0) {
                   items1.push({
                     title: transData[i][4],
                     start: new Date(transData[i][3]),
                     end: new Date(transData[i][3]),
-                    color: "red",
+                    color: "azure",
+                  });
+                } else if (transData[i][5] === "L") {
+                  items1.push({
+                    title: transData[i][4],
+                    start: new Date(transData[i][3]),
+                    end: new Date(transData[i][3]),
+                    color: "orange",
                   });
                 } else {
-                  items1.push({
-                    title: transData[i][4],
-                    start: new Date(transData[i][3]),
-                    end: new Date(transData[i][3]),
-                  });
+                  if (
+                    new Date(transData[i][3]).getDay() == 6 ||
+                    new Date(transData[i][3]).getDay() == 0
+                  ) {
+                    items1.push({
+                      title: transData[i][4],
+                      start: new Date(transData[i][3]),
+                      end: new Date(transData[i][3]),
+                      color: "red",
+                    });
+                  } else {
+                    items1.push({
+                      title: transData[i][4],
+                      start: new Date(transData[i][3]),
+                      end: new Date(transData[i][3]),
+                    });
+                  }
                 }
               }
+              setitem1(items1);
             }
-            setitem1(items1);
           }
         }
       });
@@ -233,7 +246,11 @@ export default function Calendar(props) {
         Authorization: `Bearer ${props.header.token}`,
       },
     }).then((response) => {
-      hello();
+      if (response.status === 401) {
+        ctx.logout();
+      } else {
+        hello();
+      }
     });
     setAlert(null);
   };
@@ -261,7 +278,11 @@ export default function Calendar(props) {
         Authorization: `Bearer ${props.header.token}`,
       },
     }).then((response) => {
-      hello();
+      if (response.status === 401) {
+        ctx.logout();
+      } else {
+        hello();
+      }
     });
     setAlert(null);
   };
@@ -289,7 +310,11 @@ export default function Calendar(props) {
         Authorization: `Bearer ${props.header.token}`,
       },
     }).then((response) => {
-      hello();
+      if (response.status === 401) {
+        ctx.logout();
+      } else {
+        hello();
+      }
     });
     setAlert(null);
   };
@@ -345,20 +370,23 @@ export default function Calendar(props) {
                     new Date(`${props.billyear}-${props.BillMonthNumber}-01`)
                   }
                   onSelectEvent={(slotInfo) => {
+                    var endd = new Date(props.endDate);
+                    endd.setDate(endd.getDate() + 1);
+
                     if (slotInfo.color == "azure") {
-                      console.log(slotInfo);
                       if (
                         slotInfo.start <= new Date() &&
-                        slotInfo.start <= new Date(props.endDate) &&
+                        slotInfo.start <= endd &&
                         slotInfo.start >= new Date(props.startDate)
                       ) {
                         addNewEventAlert(slotInfo, false);
                       }
                     } else if (
                       slotInfo.start <= new Date() &&
-                      slotInfo.start <= new Date(props.endDate) &&
+                      slotInfo.start <= endd &&
                       slotInfo.start >= new Date(props.startDate)
                     ) {
+                      console.log(endd);
                       addNewEventAlert(slotInfo, true);
                     }
                   }}
@@ -387,7 +415,7 @@ export default function Calendar(props) {
             </CardBody>
             <CardFooter stats className={classes.cardFooter}>
               <div style={{ float: "left" }}>
-                <h6 className={classes.legendTitle}>Legend</h6>
+                <h6 className={classes.legendTitle}>.</h6>
                 <FontAwesomeIcon icon={faCircle} style={{ color: "#1caaba" }} />
                 Holiday
                 <FontAwesomeIcon

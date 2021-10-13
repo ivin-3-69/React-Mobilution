@@ -1,6 +1,7 @@
 /*eslint-disable*/
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import AuthContext from "store/auth-context";
 import axios from "axios";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
@@ -23,6 +24,8 @@ import CardIcon from "components/Card/CardIcon.js";
 import CardHeader from "components/Card/CardHeader.js";
 import ReactTable from "components/ReactTable/ReactTable.js";
 import ArrowBack from "@material-ui/icons/ArrowBack";
+import { tooltip } from "assets/jss/material-dashboard-pro-react.js";
+import Tooltip from "@material-ui/core/Tooltip";
 
 import styles from "assets/jss/material-dashboard-pro-react/views/extendedTablesStyle.js";
 
@@ -33,6 +36,7 @@ import EditClientModal from "components/Modal/ClientHolidays/EditHolidaymodal";
 const useStyles = makeStyles(styles);
 
 export default function ExtendedTables(props) {
+  const ctx = useContext(AuthContext);
   function join(t, a, s) {
     function format(m) {
       let f = new Intl.DateTimeFormat("en", m);
@@ -51,13 +55,24 @@ export default function ExtendedTables(props) {
         },
       })
       .then(function (response) {
-        const data = response.data.payload;
-        const transData = data.map((item) => Object.values(item));
-        const ddata = transData.map((item) =>
-          item.filter((dada) => dada !== null)
-        );
-        if (ddata[0]) {
-          const checc = ddata[0][5];
+        if (response.status === 401) {
+          ctx.logout();
+        } else {
+          const data = response.data.payload;
+          const transData = data.map((item) => Object.values(item));
+          const ddata = transData.map((item) =>
+            item.filter((dada) => dada !== null)
+          );
+          if (ddata[0]) {
+            const checc = ddata[0][5];
+          }
+        }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
         }
       });
   }, []);
@@ -78,9 +93,21 @@ export default function ExtendedTables(props) {
         headers: {
           Authorization: `Bearer ${props.header.token}`,
         },
-      }).then((response) => {
-        hello();
-      });
+      })
+        .then((response) => {
+          if (response.status === 401) {
+            ctx.logout();
+          } else {
+            hello();
+          }
+        })
+        .catch(function (error) {
+          if (error.response) {
+            if (error.response.status === 401) {
+              ctx.logout();
+            }
+          }
+        });
     }
   };
 
@@ -92,13 +119,24 @@ export default function ExtendedTables(props) {
         },
       })
       .then(function (response) {
-        const data = response.data.payload;
-        const transData = data.map((item) => Object.values(item));
-        const ddata = transData.map((item) =>
-          item.filter((dada) => dada !== null)
-        );
-        setClientData(ddata);
-        setResponse(true);
+        if (response.status === 401) {
+          ctx.logout();
+        } else {
+          const data = response.data.payload;
+          const transData = data.map((item) => Object.values(item));
+          const ddata = transData.map((item) =>
+            item.filter((dada) => dada !== null)
+          );
+          setClientData(ddata);
+          setResponse(true);
+        }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
       });
   }
   useEffect(() => {
@@ -113,9 +151,21 @@ export default function ExtendedTables(props) {
       headers: {
         Authorization: `Bearer ${props.header.token}`,
       },
-    }).then((response) => {
-      hello();
-    });
+    })
+      .then((response) => {
+        if (response.status === 401) {
+          ctx.logout();
+        } else {
+          hello();
+        }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
+      });
   };
   return (
     <>
@@ -143,7 +193,7 @@ export default function ExtendedTables(props) {
                     ></AddClientModal>
                   </CardIcon>
                   <h3 style={{ color: "#345282", paddingLeft: "100px" }}>
-                    Client Location Holiday List
+                    {props.clientname} {props.ClientDetailName} Holiday List
                   </h3>
                   <div
                     style={{
@@ -160,24 +210,26 @@ export default function ExtendedTables(props) {
                     }
                   >
                     {/* {console.log(ClientData[ClientData.length - 1][5])} */}
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={ClientData[ClientData.length - 1][5]}
-                          classes={{
-                            checked: classes.checked,
-                            root: classes.checkRoot,
-                          }}
-                          onChange={handleChange}
-                          checkedIcon={
-                            <Check className={classes.checkedIcon} />
-                          }
-                          // icon={<Check className={classes.uncheckedIcon} />}
-                        />
-                      }
-                      classes={{ label: classes.label }}
-                      label="Holidays Set"
-                    />
+                    {ClientData.length > 0 && (
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={ClientData[ClientData.length - 1][5]}
+                            classes={{
+                              checked: classes.checked,
+                              root: classes.checkRoot,
+                            }}
+                            onChange={handleChange}
+                            checkedIcon={
+                              <Check className={classes.checkedIcon} />
+                            }
+                            // icon={<Check className={classes.uncheckedIcon} />}
+                          />
+                        }
+                        classes={{ label: classes.label }}
+                        label="Holidays Set"
+                      />
+                    )}
                   </div>
                 </CardHeader>
                 <CardBody>
@@ -190,37 +242,51 @@ export default function ExtendedTables(props) {
                         locationId: prop[1],
                         actions: (
                           <div className={classes.right}>
-                            <Button
-                              round
-                              color="success"
-                              className={
-                                classes.actionButton +
-                                " " +
-                                classes.actionButtonRound
-                              }
+                            <Tooltip
+                              id="tooltip-top"
+                              title="edit"
+                              placement="top"
+                              classes={{ tooltip: classes.tooltip }}
                             >
-                              <EditClientModal
-                                id={props.clientlocationid}
-                                prop={prop}
-                                hello={hello}
-                                token={props.header}
-                              ></EditClientModal>
-                            </Button>
-                            <Button
-                              round
-                              color="danger"
-                              className={
-                                classes.actionButton +
-                                " " +
-                                classes.actionButtonRound
-                              }
+                              <Button
+                                round
+                                color="success"
+                                className={
+                                  classes.actionButton +
+                                  " " +
+                                  classes.actionButtonRound
+                                }
+                              >
+                                <EditClientModal
+                                  id={props.clientlocationid}
+                                  prop={prop}
+                                  hello={hello}
+                                  token={props.header}
+                                ></EditClientModal>
+                              </Button>
+                            </Tooltip>
+                            <Tooltip
+                              id="tooltip-top"
+                              title="delete"
+                              placement="top"
+                              classes={{ tooltip: classes.tooltip }}
                             >
-                              <DeleteModal
-                                id={prop[0]}
-                                delete={deleteHandler}
-                                text={prop[4]}
-                              ></DeleteModal>
-                            </Button>
+                              <Button
+                                round
+                                color="danger"
+                                className={
+                                  classes.actionButton +
+                                  " " +
+                                  classes.actionButtonRound
+                                }
+                              >
+                                <DeleteModal
+                                  id={prop[0]}
+                                  delete={deleteHandler}
+                                  text={prop[4]}
+                                ></DeleteModal>
+                              </Button>
+                            </Tooltip>
                           </div>
                         ),
                       };
@@ -259,7 +325,7 @@ export default function ExtendedTables(props) {
                     <AddClientModal token={props.header}></AddClientModal>
                   </CardIcon>
                   <h3 style={{ color: "#345282", paddingLeft: "100px" }}>
-                    Client Location Holiday List
+                    {props.clientname} {props.ClientDetailName} Holiday List
                   </h3>
                 </CardHeader>
                 <h4 style={{ textAlign: "center" }}>Loading...</h4>

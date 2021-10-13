@@ -19,6 +19,7 @@ import {
   dribbbleColor,
   redditColor,
   hexToRgb,
+  cardTitle,
 } from "assets/jss/material-dashboard-pro-react.js";
 
 const buttonStyle = {
@@ -166,6 +167,27 @@ const buttonStyle = {
         hexToRgb(successColor[0]) +
         ", 0.2)",
     },
+  },
+  cardTitle,
+  cardCategory: {
+    margin: "0",
+    color: grayColor[0],
+  },
+  cardIconTitle: {
+    ...cardTitle,
+    marginTop: "15px",
+    marginBottom: "0px",
+  },
+  legendTitle: {
+    color: grayColor[0],
+    margin: "10px 0 !important",
+    display: "flex",
+  },
+  gray: {
+    color: grayColor[0],
+  },
+  cardFooter: {
+    display: "block",
   },
   warning: {
     backgroundColor: warningColor[0],

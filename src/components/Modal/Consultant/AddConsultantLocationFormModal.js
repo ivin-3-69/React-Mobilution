@@ -33,6 +33,8 @@ export default function ModalForm(props) {
   const [clientlocationidlist, setClientLocationidlist] = useState();
   const [chosenclientlocation, setChosenClientLocation] = useState();
   const [checked, setChecked] = React.useState(false);
+  const [startdatee, setstartdate] = useState();
+  const [enddatee, setenddate] = useState();
 
   const handleChange = (event) => {
     setChecked(event.target.checked);
@@ -76,6 +78,7 @@ export default function ModalForm(props) {
   }, []);
   useEffect(() => {
     setClientLocationidlist();
+    setDropDownTitle3("choose location");
     if (chosenclient) {
       var url = `/clientlocation/byclient?id=${chosenclient}`;
       axios({
@@ -108,78 +111,66 @@ export default function ModalForm(props) {
         setClientLocationidlist(clientlocationid1d);
       });
     }
-  }, [chosenclient]);
+  }, [chosenclient, dropdowntitle2]);
 
   const submitHandler = (event) => {
     event.preventDefault();
-    console.log(event.target[7].value);
+    if (
+      startdatee &&
+      enddatee &&
+      event.target[2].value &&
+      event.target[5].value >= 0 &&
+      event.target[5].value <= 24 &&
+      event.target[4].value >= 0 &&
+      event.target[8].value >= 0
+    ) {
+      var startdate = `${startdatee.getFullYear()}-${
+        startdatee.getMonth() + 1
+      }-${startdatee.getDate()}`;
 
-    var date = new Date(event.target[0].value);
-    if (date.getDate() < 10) {
-      var newdate = `0${date.getDate()}`;
-    } else {
-      newdate = date.getDate();
-    }
-
-    if (date.getMonth() + 1 < 10) {
-      var newmonth = `0${date.getMonth() + 1}`;
-    } else {
-      newmonth = date.getMonth() + 1;
-    }
-
-    var startdate = `${date.getFullYear()}-${newmonth}-${newdate}`;
-
-    var date2 = new Date(event.target[1].value);
-    if (date2.getDate() < 10) {
-      var newdate2 = `0${date2.getDate()}`;
-    } else {
-      newdate2 = date2.getDate();
-    }
-
-    if (date2.getMonth() + 1 < 10) {
-      var newmonth2 = `0${date2.getMonth() + 1}`;
-    } else {
-      newmonth2 = date2.getMonth() + 1;
-    }
-
-    var enddate = `${date2.getFullYear()}-${newmonth2}-${newdate2}`;
-    axios({
-      method: "post",
-      url: "/assign/clientlocation",
-      data: {
-        consultantId: props.id,
-
-        startDate: startdate,
-
-        endDate: enddate,
-
-        clientLocationId: chosenclientlocation,
-
-        billRate: event.target[4].value,
-
-        paidLeaves: event.target[8].value,
-
-        holidayPayable: checked ? "Y" : "N",
-
-        billType: chosenbilltype,
-
-        hoursPerDay: event.target[5].value,
-
-        poDetails: {
-          poNo: event.target[2].value,
+      var enddate = `${enddatee.getFullYear()}-${
+        enddatee.getMonth() + 1
+      }-${enddatee.getDate()}`;
+      axios({
+        method: "post",
+        url: "/assign/clientlocation",
+        data: {
+          consultantId: props.id,
 
           startDate: startdate,
 
           endDate: enddate,
+
+          clientLocationId: chosenclientlocation,
+
+          billRate: event.target[4].value,
+
+          paidLeaves: event.target[8].value,
+
+          holidayPayable: checked ? "Y" : "N",
+
+          overtimeBillable: "Y",
+
+          billType: chosenbilltype,
+
+          hoursPerDay: event.target[5].value,
+
+          poDetails: {
+            poNo: event.target[2].value,
+
+            startDate: startdate,
+
+            endDate: enddate,
+          },
         },
-      },
-      headers: {
-        Authorization: `Bearer ${props.token.token}`,
-      },
-    }).then((response) => {
-      props.hello();
-    });
-    props.love();
+        headers: {
+          Authorization: `Bearer ${props.token.token}`,
+        },
+      }).then((response) => {
+        props.hello();
+      });
+      props.love();
+    }
   };
   return (
     <GridContainer>
@@ -194,6 +185,10 @@ export default function ModalForm(props) {
                   timeFormat={false}
                   inputProps={{ placeholder: "Date Picker Here" }}
                   isValidDate={valid}
+                  dateFormat="DD/MM/YYYY"
+                  onChange={(event) => {
+                    setstartdate((prev) => event._d);
+                  }}
                 />
               </FormControl>
               <InputLabel className={classes.label}>End Date</InputLabel>
@@ -203,6 +198,10 @@ export default function ModalForm(props) {
                   timeFormat={false}
                   inputProps={{ placeholder: "Date Picker Here" }}
                   isValidDate={valid}
+                  dateFormat="DD/MM/YYYY"
+                  onChange={(event) => {
+                    setenddate((prev) => event._d);
+                  }}
                 />
               </FormControl>
               <CustomInput
@@ -217,14 +216,14 @@ export default function ModalForm(props) {
               />
               <CustomDropdown
                 buttonText={dropdowntitle}
-                dropdownList={["Hourly", "Daily", "WorkDays Only", "Monthly"]}
+                dropdownList={["hourly", "daily", "mothly(w)", "monthly(c)"]}
                 buttonProps={{}}
                 onClick={(key) => {
                   setDropDownTitle(
-                    ["Hourly", "Daily", "WorkDays Only", "Monthly"][key]
+                    ["hourly", "daily", "mothly(w)", "monthly(c)"][key]
                   );
                   setchosenbilltype(
-                    ["Hourly", "Daily", "WorkDays Only", "Monthly"][key]
+                    ["hourly", "daily", "mothly(w)", "monthly(c)"][key]
                   );
                 }}
               />

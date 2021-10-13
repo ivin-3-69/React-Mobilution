@@ -1,6 +1,7 @@
 /*eslint-disable*/
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import AuthContext from "store/auth-context";
 import axios from "axios";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
@@ -33,8 +34,7 @@ import ClientDetail from "./consultantdetails";
 const useStyles = makeStyles(styles);
 
 export default function Consultant(props) {
-  //console.log(props);
-
+  const ctx = useContext(AuthContext);
   const [mode, setMode] = useState(true);
   const [ClientDetailId, setClientDetailId] = useState();
   const [ClientDetailName, setClientDetailName] = useState();
@@ -48,15 +48,26 @@ export default function Consultant(props) {
         },
       })
       .then(function (response) {
-        const data = response.data.payload;
-        if (data) {
-          const transData = data.map((item) => Object.values(item));
-          const ddata = transData.map((item) =>
-            item.filter((dada) => dada !== null)
-          );
-          setClientData(ddata);
+        if (response.status === 401) {
+          ctx.logout();
+        } else {
+          const data = response.data.payload;
+          if (data) {
+            const transData = data.map((item) => Object.values(item));
+            const ddata = transData.map((item) =>
+              item.filter((dada) => dada !== null)
+            );
+            setClientData(ddata);
+          }
+          setResponse(true);
         }
-        setResponse(true);
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
       });
   }
   useEffect(() => {
@@ -73,9 +84,21 @@ export default function Consultant(props) {
       headers: {
         Authorization: `Bearer ${props.header.token}`,
       },
-    }).then((response) => {
-      hello();
-    });
+    })
+      .then((response) => {
+        if (response.status === 401) {
+          ctx.logout();
+        } else {
+          hello();
+        }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
+      });
   };
   return (
     <>
@@ -112,7 +135,7 @@ export default function Consultant(props) {
                             <div className={classes.right}>
                               <Tooltip
                                 id="tooltip-top"
-                                title="edit consultant"
+                                title="edit"
                                 placement="top"
                                 classes={{ tooltip: classes.tooltip }}
                               >
@@ -135,7 +158,7 @@ export default function Consultant(props) {
 
                               <Tooltip
                                 id="tooltip-top"
-                                title="delete consultant"
+                                title="delete"
                                 placement="top"
                                 classes={{ tooltip: classes.tooltip }}
                               >
@@ -151,7 +174,7 @@ export default function Consultant(props) {
                                   <DeleteModal
                                     id={prop[0]}
                                     delete={deleteHandler}
-                                    text={prop[3]}
+                                    text={prop[1]}
                                   ></DeleteModal>
                                 </Button>
                               </Tooltip>
@@ -167,7 +190,7 @@ export default function Consultant(props) {
                                   onClick={() => {
                                     setMode(false);
                                     setClientDetailId(prop[0]);
-                                    setClientDetailName(prop[3]);
+                                    setClientDetailName(prop[1]);
                                   }}
                                   color="info"
                                   className={
@@ -184,10 +207,6 @@ export default function Consultant(props) {
                         };
                       })}
                       columns={[
-                        {
-                          Header: "Consultant Id",
-                          accessor: "employeeId",
-                        },
                         {
                           Header: "First Name",
                           accessor: "firstname",

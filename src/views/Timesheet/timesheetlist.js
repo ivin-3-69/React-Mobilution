@@ -28,16 +28,18 @@ import styles from "assets/jss/material-dashboard-pro-react/views/extendedTables
 
 import AddClientModal from "components/Modal/Consultant/AddConsultantModal";
 
-import ClientDetail from "./timesheet";
+import ClientDetail from "./timesheet2";
 import { events } from "variables/general";
 
 const useStyles = makeStyles(styles);
 
 export default function Consultant(props) {
   //console.log(props);
-
   const [mode, setMode] = useState(true);
   const [ClientDetailId, setClientDetailId] = useState();
+  const [location, setLocation] = useState();
+  const [start, setStart] = useState();
+  const [end, setEnd] = useState();
   const [ClientDetailName, setClientDetailName] = useState();
   const [ClientData, setClientData] = useState([]);
   const [Response, setResponse] = useState(false);
@@ -61,6 +63,8 @@ export default function Consultant(props) {
   const [BillMonthNumber, setBillMonthNumber] = useState(
     new Date().getMonth() + 1
   );
+  const [yearArray, setyearArray] = useState([]);
+
   const [dropdowntitle, setDropDownTitle] = useState(
     [
       "JAN",
@@ -94,17 +98,24 @@ export default function Consultant(props) {
         const data = response.data.payload;
         if (data) {
           const transData = data.map((item) => Object.values(item));
-          // const ddata = transData.map((item) =>
-          //   item.filter((dada) => dada !== null)
-          // );
           setClientData(transData);
-          // console.log(transData);
         }
         setResponse(true);
       });
   }
   useEffect(() => {
     hello();
+    var array = [];
+    if (billyear > 0) {
+      for (let i = -5; i < 6; i++) {
+        array.push(billyear + i);
+      }
+    } else {
+      for (let i = -5; i < 6; i++) {
+        array.push(new Date().getFullYear() + i);
+      }
+    }
+    setyearArray(array);
   }, [BillMonth, billyear]);
 
   const classes = useStyles();
@@ -189,23 +200,11 @@ export default function Consultant(props) {
                         />
                         <CustomDropdown
                           buttonText={dropdowntitle2}
-                          dropdownList={[
-                            2019,
-                            2020,
-                            2021,
-                            2022,
-                            2023,
-                            2024,
-                            2025,
-                          ]}
+                          dropdownList={yearArray}
                           buttonProps={{}}
                           onClick={(key) => {
-                            setDropDownTitle2(
-                              [2019, 2020, 2021, 2022, 2023, 2024, 2025][key]
-                            );
-                            setbillyear(
-                              [2019, 2020, 2021, 2022, 2023, 2024, 2025][key]
-                            );
+                            setDropDownTitle2(yearArray[key]);
+                            setbillyear(yearArray[key]);
                           }}
                         />
                       </div>
@@ -219,6 +218,8 @@ export default function Consultant(props) {
                           firstname: prop[1],
                           lastname: prop[2],
                           employeeId: prop[3],
+                          clientname: prop[6].client.client,
+                          clientlocname: prop[6].clientLocation.locationName,
                           isFinalised: (
                             <div
                               className={
@@ -274,27 +275,54 @@ export default function Consultant(props) {
                             <div className={classes.right}>
                               <Tooltip
                                 id="tooltip-top"
-                                title="consultant Timesheet"
+                                title="timesheet details"
                                 placement="top"
                                 classes={{ tooltip: classes.tooltip }}
                               >
-                                <Button
-                                  round
-                                  onClick={() => {
-                                    setMode(false);
-                                    setClientDetailId(prop[0]);
-                                    setClientDetailName(prop[1]);
-                                    setHolidays(prop[12]);
-                                  }}
-                                  color="info"
-                                  className={
-                                    classes.actionButton +
-                                    " " +
-                                    classes.actionButtonRound
-                                  }
-                                >
-                                  <Room className={classes.icon} />
-                                </Button>
+                                {prop[9] === "Y" ? (
+                                  <Button
+                                    round
+                                    onClick={() => {
+                                      setMode(false);
+                                      setClientDetailId(prop[0]);
+                                      setClientDetailName(prop[1]);
+                                      setHolidays(prop[12]);
+                                      alert("Already Finalised Timesheet.");
+                                      setLocation(prop[11]);
+                                      setStart(prop[7]);
+                                      setEnd(prop[8]);
+                                    }}
+                                    color="info"
+                                    className={
+                                      classes.actionButton +
+                                      " " +
+                                      classes.actionButtonRound
+                                    }
+                                  >
+                                    <Room className={classes.icon} />
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    round
+                                    onClick={() => {
+                                      setMode(false);
+                                      setClientDetailId(prop[0]);
+                                      setClientDetailName(prop[1]);
+                                      setHolidays(prop[12]);
+                                      setLocation(prop[11]);
+                                      setStart(prop[7]);
+                                      setEnd(prop[8]);
+                                    }}
+                                    color="info"
+                                    className={
+                                      classes.actionButton +
+                                      " " +
+                                      classes.actionButtonRound
+                                    }
+                                  >
+                                    <Room className={classes.icon} />
+                                  </Button>
+                                )}
                               </Tooltip>
                             </div>
                           ),
@@ -302,8 +330,12 @@ export default function Consultant(props) {
                       })}
                       columns={[
                         {
-                          Header: "Consultant Id",
-                          accessor: "employeeId",
+                          Header: "Client",
+                          accessor: "clientname",
+                        },
+                        {
+                          Header: "Client Location",
+                          accessor: "clientlocname",
                         },
                         {
                           Header: "First Name",
@@ -345,10 +377,13 @@ export default function Consultant(props) {
           }}
           header={props.header}
           clientId={ClientDetailId}
+          location={location}
           clientName={ClientDetailName}
           Holidays={Holidays}
           BillMonthNumber={BillMonthNumber}
           billyear={billyear}
+          startDate={start}
+          endDate={end}
         ></ClientDetail>
       )}
     </>

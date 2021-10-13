@@ -5,13 +5,13 @@ import { Calendar as BigCalendar, momentLocalizer } from "react-big-calendar";
 // dependency plugin for react-big-calendar
 import moment from "moment";
 import axios from "axios";
+import RBCToolbar from "./CustomToolbar.js";
 
 // react component used to create alerts
 import SweetAlert from "react-bootstrap-sweetalert";
 
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
-
 
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
@@ -32,11 +32,47 @@ const useStyles = makeStyles(styles);
 export default function Calendar(props) {
   const classes = useStyles();
   const [events, setEvents] = useState([]);
+  const [itemm1, setitem1] = useState([]);
+  const [itemm2, setitem2] = useState([]);
   const [alert, setAlert] = useState(null);
   const [flag, setflag] = useState(false);
+  const [HolidayData, setHolidayData] = useState([]);
   const selectedEvent = (event) => {
     window.alert(event.title);
   };
+  var items1 = [];
+  var items2 = [];
+  function combine() {
+    items1.push(items2);
+    setEvents(items1);
+  }
+  function hello2() {
+    axios
+      .get(`/holiday/byclientlocation?id=208`, {
+        headers: {
+          Authorization: `Bearer ${props.header.token}`,
+        },
+      })
+      .then(function (response) {
+        const data2 = response.data.payload;
+        if (data2) {
+          const transData2 = data2.map((item) => Object.values(item));
+          // console.log(data2[1][2], transData2[1][2]);
+          if (transData2[0]) {
+            for (var i = 0; i < transData2.length; i++) {
+              items2.push({
+                title: 0,
+                start: new Date(transData2[i][2]),
+                end: new Date(transData2[i][2]),
+                color: "azure",
+              });
+            }
+            setitem2(items2);
+          }
+        }
+      })
+      .then(combine());
+  }
   function hello() {
     axios
       .get(
@@ -53,22 +89,56 @@ export default function Calendar(props) {
           const transData = data.map((item) => Object.values(item));
           // setClientData(transData);
           if (transData[0]) {
-            var newEvents = [];
             for (var i = 0; i < transData.length; i++) {
-              newEvents.push({
-                title: transData[i][4],
-                start: new Date(transData[i][3]),
-                end: new Date(transData[i][3]),
-              });
+              if (transData[i][5] === "H") {
+                items1.push({
+                  title: transData[i][4],
+                  start: new Date(transData[i][3]),
+                  end: new Date(transData[i][3]),
+                  color: "azure",
+                });
+              } else if (transData[i][5] === "L") {
+                items1.push({
+                  title: transData[i][4],
+                  start: new Date(transData[i][3]),
+                  end: new Date(transData[i][3]),
+                  color: "orange",
+                });
+              } else {
+                if (
+                  new Date(transData[i][3]).getDay() == 6 ||
+                  new Date(transData[i][3]).getDay() == 0
+                ) {
+                  items1.push({
+                    title: transData[i][4],
+                    start: new Date(transData[i][3]),
+                    end: new Date(transData[i][3]),
+                    color: "red",
+                  });
+                } else {
+                  items1.push({
+                    title: transData[i][4],
+                    start: new Date(transData[i][3]),
+                    end: new Date(transData[i][3]),
+                  });
+                }
+              }
             }
-            setEvents(newEvents);
+            setitem1(items1);
           }
         }
-      });
+      })
+      .then(hello2());
   }
+
   useEffect(() => {
     hello();
+    // hello2();
   }, []);
+  useEffect(() => {
+    // console.log();
+    setEvents([...itemm1, ...itemm2]);
+  }, [itemm1, itemm2]);
   const addNewEventAlert = (slotInfo) => {
     setAlert(
       <SweetAlert
@@ -79,8 +149,14 @@ export default function Calendar(props) {
         style={{ display: "block", marginTop: "-100px" }}
         title="Input something"
         onConfirm={(e) => {
-          if (e > 0 && e % 0.5 === 0) {
+          if (e >= 0 && e % 0.5 === 0) {
             addNewEvent(e, slotInfo);
+            setflag(false);
+          } else if (e === "L" || e === "l") {
+            addLeaveEvent(e, slotInfo);
+            setflag(false);
+          } else if (e === "H" || e === "h") {
+            addHolidayEvent(e, slotInfo);
             setflag(false);
           } else {
             setflag(true);
@@ -93,7 +169,6 @@ export default function Calendar(props) {
     );
   };
   const addNewEvent = (e, slotInfo) => {
-    console.log("2021-09-11");
     axios({
       method: "post",
       url: "/timesheet/save",
@@ -110,6 +185,62 @@ export default function Calendar(props) {
             }-${slotInfo.start.getDate()}`,
             hours: e,
             dayType: "B",
+          },
+        ],
+      },
+      headers: {
+        Authorization: `Bearer ${props.header.token}`,
+      },
+    }).then((response) => {
+      hello();
+    });
+    setAlert(null);
+  };
+  const addLeaveEvent = (e, slotInfo) => {
+    axios({
+      method: "post",
+      url: "/timesheet/save",
+      data: {
+        consultantId: props.clientId,
+        month: props.BillMonthNumber,
+        year: props.billyear,
+        isFinalised: "Y",
+        list: [
+          {
+            id: 7,
+            date: `${slotInfo.start.getFullYear()}-${
+              slotInfo.start.getMonth() + 1
+            }-${slotInfo.start.getDate()}`,
+            hours: 0,
+            dayType: "L",
+          },
+        ],
+      },
+      headers: {
+        Authorization: `Bearer ${props.header.token}`,
+      },
+    }).then((response) => {
+      hello();
+    });
+    setAlert(null);
+  };
+  const addHolidayEvent = (e, slotInfo) => {
+    axios({
+      method: "post",
+      url: "/timesheet/save",
+      data: {
+        consultantId: props.clientId,
+        month: props.BillMonthNumber,
+        year: props.billyear,
+        isFinalised: "Y",
+        list: [
+          {
+            id: 7,
+            date: `${slotInfo.start.getFullYear()}-${
+              slotInfo.start.getMonth() + 1
+            }-${slotInfo.start.getDate()}`,
+            hours: 0,
+            dayType: "H",
           },
         ],
       },
@@ -159,20 +290,30 @@ export default function Calendar(props) {
                   localizer={localizer}
                   events={events}
                   defaultView="month"
-                  defaultDate={new Date()}
+                  defaultDate={
+                    new Date(`${props.billyear}-${props.BillMonthNumber}-01`)
+                  }
                   onSelectEvent={(event) => selectedEvent(event)}
                   onSelectSlot={(slotInfo) => addNewEventAlert(slotInfo)}
                   eventPropGetter={eventColors}
+                  components={{
+                    toolbar: RBCToolbar,
+                  }}
                 />
               ) : (
                 <BigCalendar
                   localizer={localizer}
                   events={events}
                   defaultView="month"
-                  defaultDate={new Date()}
+                  defaultDate={
+                    new Date(`${props.billyear}-${props.BillMonthNumber}-01`)
+                  }
                   onSelectEvent={(event) => selectedEvent(event)}
                   onSelectSlot={(slotInfo) => addNewEventAlert(slotInfo)}
                   eventPropGetter={eventColors}
+                  components={{
+                    toolbar: RBCToolbar,
+                  }}
                 />
               )}
             </CardBody>

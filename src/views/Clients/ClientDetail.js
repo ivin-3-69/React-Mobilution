@@ -1,8 +1,11 @@
 /*eslint-disable*/
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import AuthContext from "store/auth-context";
 import axios from "axios";
 import { makeStyles } from "@material-ui/core/styles";
 import Event from "@material-ui/icons/Event";
+import { tooltip } from "assets/jss/material-dashboard-pro-react.js";
+import Tooltip from "@material-ui/core/Tooltip";
 
 import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
@@ -25,10 +28,14 @@ import EditModal from "components/Modal/EditClientDetailModal";
 const useStyles = makeStyles(styles);
 
 const ClientDetail = (props) => {
+  const ctx = useContext(AuthContext);
+
   const [ClientData, setClientData] = useState([]);
   const [Response, setResponse] = useState(false);
   const [mode, setMode] = useState(true);
   const [ClientLocationId, setClientLocationId] = useState();
+  const [ClientDetailName, setClientDetailName] = useState();
+
   function hello() {
     axios
       .get(`/clientlocation/byclient?id=${props.clientId}`, {
@@ -37,13 +44,24 @@ const ClientDetail = (props) => {
         },
       })
       .then(function (response) {
-        const data = response.data.payload;
-        const transData = data.map((item) => Object.values(item));
-        const ddata = transData.map((item) =>
-          item.filter((dada) => dada !== null)
-        );
-        setClientData(ddata);
-        setResponse(true);
+        if (response.status === 401) {
+          ctx.logout();
+        } else {
+          const data = response.data.payload;
+          const transData = data.map((item) => Object.values(item));
+          const ddata = transData.map((item) =>
+            item.filter((dada) => dada !== null)
+          );
+          setClientData(ddata);
+          setResponse(true);
+        }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
       });
   }
 
@@ -59,9 +77,21 @@ const ClientDetail = (props) => {
       headers: {
         Authorization: `Bearer ${props.header.token}`,
       },
-    }).then((response) => {
-      hello();
-    });
+    })
+      .then((response) => {
+        if (response.status === 401) {
+          ctx.logout();
+        } else {
+          hello();
+        }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
+      });
   };
 
   const classes = useStyles();
@@ -110,55 +140,77 @@ const ClientDetail = (props) => {
                             // we've added some custom button actions
 
                             <div className={classes.right}>
-                              <Button
-                                round
-                                color="success"
-                                className={
-                                  classes.actionButton +
-                                  " " +
-                                  classes.actionButtonRound
-                                }
+                              <Tooltip
+                                id="tooltip-top"
+                                title="edit"
+                                placement="top"
+                                classes={{ tooltip: classes.tooltip }}
                               >
-                                <EditModal
-                                  id={props.clientId}
-                                  token={props.header}
-                                  locationid={prop[0]}
-                                  billingAddressId={prop[8].id}
-                                  hello={hello}
-                                  prop={prop}
-                                ></EditModal>
-                                {/* {console.log(prop[8].id)} */}
-                              </Button>
-                              <Button
-                                round
-                                color="danger"
-                                className={
-                                  classes.actionButton +
-                                  " " +
-                                  classes.actionButtonRound
-                                }
+                                <Button
+                                  round
+                                  color="success"
+                                  className={
+                                    classes.actionButton +
+                                    " " +
+                                    classes.actionButtonRound
+                                  }
+                                >
+                                  <EditModal
+                                    id={props.clientId}
+                                    token={props.header}
+                                    locationid={prop[0]}
+                                    billingAddressId={prop[8].id}
+                                    hello={hello}
+                                    prop={prop}
+                                  ></EditModal>
+                                  {/* {console.log(prop[8].id)} */}
+                                </Button>
+                              </Tooltip>
+                              <Tooltip
+                                id="tooltip-top"
+                                title="delete"
+                                placement="top"
+                                classes={{ tooltip: classes.tooltip }}
                               >
-                                <DeleteModal
-                                  id={prop[0]}
-                                  delete={deleteHandler}
-                                  text={prop[1]}
-                                ></DeleteModal>
-                              </Button>
-                              <Button
-                                round
-                                onClick={() => {
-                                  setMode(false);
-                                  setClientLocationId(prop[0]);
-                                }}
-                                color="info"
-                                className={
-                                  classes.actionButton +
-                                  " " +
-                                  classes.actionButtonRound
-                                }
+                                <Button
+                                  round
+                                  color="danger"
+                                  className={
+                                    classes.actionButton +
+                                    " " +
+                                    classes.actionButtonRound
+                                  }
+                                >
+                                  <DeleteModal
+                                    id={prop[0]}
+                                    delete={deleteHandler}
+                                    text={prop[1]}
+                                  ></DeleteModal>
+                                </Button>
+                              </Tooltip>
+                              <Tooltip
+                                id="tooltip-top"
+                                title="client holiday"
+                                placement="top"
+                                classes={{ tooltip: classes.tooltip }}
                               >
-                                <Event className={classes.icon} />
-                              </Button>
+                                <Button
+                                  round
+                                  onClick={() => {
+                                    setMode(false);
+                                    setClientLocationId(prop[0]);
+                                    setClientDetailName(prop[1]);
+                                  }}
+                                  color="info"
+                                  className={
+                                    classes.actionButton +
+                                    " " +
+                                    classes.actionButtonRound
+                                  }
+                                >
+                                  <Event className={classes.icon} />
+                                </Button>
+                              </Tooltip>
                             </div>
                           ),
                         };
@@ -225,6 +277,8 @@ const ClientDetail = (props) => {
         <ClientHolidays
           header={props.header}
           clientlocationid={ClientLocationId}
+          ClientDetailName={ClientDetailName}
+          clientname={props.clientName}
           click={() => {
             setMode(true);
           }}

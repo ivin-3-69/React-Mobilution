@@ -344,70 +344,10 @@ function Sidebar(props) {
           >
             <ListItemText
               primary={rtlActive ? "تانيا أندرو" : props.nameOnSidebar}
-              secondary={
-                <b
-                  className={
-                    caret +
-                    " " +
-                    classes.userCaret +
-                    " " +
-                    (openAvatar ? classes.caretActive : "")
-                  }
-                />
-              }
               disableTypography={true}
               className={itemText + " " + classes.userItemText}
             />
           </NavLink>
-          <Collapse in={openAvatar} unmountOnExit>
-            <List className={classes.list + " " + classes.collapseList}>
-              <ListItem className={classes.collapseItem}>
-                <NavLink
-                  to="#"
-                  className={classes.itemLink + " " + classes.userCollapseLinks}
-                >
-                  <span className={collapseItemMini}>
-                    {rtlActive ? "مع" : "MP"}
-                  </span>
-                  <ListItemText
-                    primary={rtlActive ? "ملفي" : "My Profile"}
-                    disableTypography={true}
-                    className={collapseItemText}
-                  />
-                </NavLink>
-              </ListItem>
-              <ListItem className={classes.collapseItem}>
-                <NavLink
-                  to="#"
-                  className={classes.itemLink + " " + classes.userCollapseLinks}
-                >
-                  <span className={collapseItemMini}>
-                    {rtlActive ? "هوع" : "EP"}
-                  </span>
-                  <ListItemText
-                    primary={rtlActive ? "تعديل الملف الشخصي" : "Edit Profile"}
-                    disableTypography={true}
-                    className={collapseItemText}
-                  />
-                </NavLink>
-              </ListItem>
-              <ListItem className={classes.collapseItem}>
-                <NavLink
-                  to="#"
-                  className={classes.itemLink + " " + classes.userCollapseLinks}
-                >
-                  <span className={collapseItemMini}>
-                    {rtlActive ? "و" : "S"}
-                  </span>
-                  <ListItemText
-                    primary={rtlActive ? "إعدادات" : "Settings"}
-                    disableTypography={true}
-                    className={collapseItemText}
-                  />
-                </NavLink>
-              </ListItem>
-            </List>
-          </Collapse>
         </ListItem>
       </List>
     </div>
@@ -449,7 +389,7 @@ function Sidebar(props) {
         target="_blank"
         className={logoNormal}
       >
-        {logoText}
+        RECIBO
       </a>
     </div>
   );
@@ -468,7 +408,6 @@ function Sidebar(props) {
       [classes.sidebarWrapperWithPerfectScrollbar]:
         navigator.platform.indexOf("Win") > -1,
     });
-
 
   return (
     <div ref={mainPanel}>
@@ -489,9 +428,7 @@ function Sidebar(props) {
           <SidebarWrapper
             className={sidebarWrapper}
             user={user}
-            headerLinks={
-              <AdminNavbarLinks rtlActive={rtlActive} />
-            }
+            headerLinks={<AdminNavbarLinks rtlActive={rtlActive} />}
             links={links}
           />
           {image !== undefined ? (

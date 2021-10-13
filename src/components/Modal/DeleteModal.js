@@ -58,7 +58,7 @@ export default function Modal(props) {
           >
             <Close className={classes.modalClose} />
           </Button>
-          <h4 className={classes.modalTitle}>Delete Client</h4>
+          <h4 className={classes.modalTitle}>Delete</h4>
         </DialogTitle>
         <DialogContent
           id="modal-slide-description"

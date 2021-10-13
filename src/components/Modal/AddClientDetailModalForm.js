@@ -34,6 +34,14 @@ export default function ModalForm(props) {
   const [usernamelist, setUsernamelist] = useState(["ivin"]);
   const [useridlist, setUseridlist] = useState([1]);
   const [gstflag, setgstflag] = useState(null);
+  const [numberflag, setnumberflag] = useState(null);
+  const [panflag, setpanflag] = useState(null);
+  const [pincodeflag1, setpincodeflag1] = useState(null);
+  const [pincodeflag2, setpincodeflag2] = useState(null);
+  const [dropdownflag, setdropdownflag] = useState(null);
+  const [dropdownflag2, setdropdownflag2] = useState(null);
+  const [dropdownflag3, setdropdownflag3] = useState(null);
+  const [dropdownflag4, setdropdownflag4] = useState(null);
 
   const handleChange = (event) => {
     setChecked(event.target.checked);
@@ -96,10 +104,48 @@ export default function ModalForm(props) {
 
   const submitHandler = (event) => {
     event.preventDefault();
-    let flag = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(
+    console.log(dropdowntitle, dropdowntitle2, dropdowntitle3, dropdowntitle4);
+    let flag1 = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(
       event.target[1].value
     );
-    if (flag) {
+    let flag2 = /^[0-9]{10}$/.test(event.target[5].value);
+    let flag3 = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(event.target[2].value);
+    let flag5 = /^[0-9]{6}$/.test(event.target[13].value);
+    let flag6 = /^[0-9]{6}$/.test(event.target[19].value);
+    let flag4;
+    let flag7 = dropdowntitle == "City";
+    let flag8 = dropdowntitle2 == "City";
+    let flag9 = dropdowntitle3 == "Delivery Manager";
+    let flag10 = dropdowntitle4 == "Account Manager";
+    console.log(flag7, flag8, flag9, flag10);
+    if (
+      dropdowntitle != "City" &&
+      dropdowntitle2 != "City" &&
+      dropdowntitle3 != "Delivery Manager" &&
+      dropdowntitle4 != "Account Manager" &&
+      event.target[0].value &&
+      event.target[1].value &&
+      event.target[2].value &&
+      event.target[4].value &&
+      event.target[5].value > 0 &&
+      event.target[6].value &&
+      event.target[9].value &&
+      event.target[10].value &&
+      event.target[11].value &&
+      event.target[12].value &&
+      event.target[13].value &&
+      event.target[15].value &&
+      event.target[16].value &&
+      event.target[17].value &&
+      event.target[18].value &&
+      event.target[19].value
+    ) {
+      flag4 = true;
+    } else {
+      flag4 = false;
+    }
+    // console.log(flag1, flag2, flag3, flag4, flag5, flag6);
+    if (flag1 && flag2 && flag3 && flag4 && flag5 && flag6) {
       axios({
         method: "post",
         url: "/clientlocation/save",
@@ -146,12 +192,18 @@ export default function ModalForm(props) {
       }).then((response) => {
         props.hello();
       });
-      setgstflag(false);
+
       props.love();
-    } else {
-      setgstflag(true);
-      console.log("gst invalid");
     }
+    setgstflag(!flag1);
+    setnumberflag(!flag2);
+    setpanflag(!flag3);
+    setpincodeflag1(!flag5);
+    setpincodeflag2(!flag6);
+    setdropdownflag(flag7);
+    setdropdownflag2(flag8);
+    setdropdownflag3(flag9);
+    setdropdownflag4(flag10);
   };
 
   const classes = useStyles();
@@ -172,6 +224,7 @@ export default function ModalForm(props) {
                     }}
                     inputProps={{
                       type: "text",
+                      required: true,
                     }}
                   />
                   <CustomInput
@@ -183,16 +236,19 @@ export default function ModalForm(props) {
                     }}
                     inputProps={{
                       type: "text",
+                      required: true,
                     }}
                   />
                   <CustomInput
                     labelText="Pan No"
                     id="panNo"
+                    error={panflag}
                     formControlProps={{
                       fullWidth: true,
                     }}
                     inputProps={{
                       type: "text",
+                      required: true,
                     }}
                   />
                   <CustomDropdown
@@ -214,16 +270,19 @@ export default function ModalForm(props) {
                     }}
                     inputProps={{
                       type: "text",
+                      required: true,
                     }}
                   />
                   <CustomInput
                     labelText="Contact No"
                     id="ContactNo"
+                    error={numberflag}
                     formControlProps={{
                       fullWidth: true,
                     }}
                     inputProps={{
                       type: "text",
+                      required: true,
                     }}
                   />
                   <CustomInput
@@ -234,6 +293,7 @@ export default function ModalForm(props) {
                     }}
                     inputProps={{
                       type: "text",
+                      required: true,
                     }}
                   />
                   <CustomDropdown
@@ -273,6 +333,7 @@ export default function ModalForm(props) {
                     }}
                     inputProps={{
                       type: "text",
+                      required: true,
                     }}
                   />
                   <CustomInput
@@ -283,6 +344,7 @@ export default function ModalForm(props) {
                     }}
                     inputProps={{
                       type: "text",
+                      required: true,
                     }}
                   />
                   <CustomInput
@@ -293,6 +355,7 @@ export default function ModalForm(props) {
                     }}
                     inputProps={{
                       type: "text",
+                      required: true,
                     }}
                   />
                   <CustomInput
@@ -303,25 +366,25 @@ export default function ModalForm(props) {
                     }}
                     inputProps={{
                       type: "text",
+                      required: true,
                     }}
                   />
                   <CustomInput
                     labelText="Pincode"
                     id="pincode"
+                    error={pincodeflag1}
                     formControlProps={{
                       fullWidth: true,
                     }}
                     inputProps={{
                       type: "text",
+                      required: true,
                     }}
                   />
                   <CustomDropdown
                     buttonText={dropdowntitle}
                     dropdownList={citynamelist}
-                    buttonProps={{
-                      round: true,
-                      color: "white",
-                    }}
+                    buttonProps={{}}
                     onClick={(key) => {
                       setDropDownTitle(citynamelist[key]);
                       setChosenId(cityidlist[key]);
@@ -338,6 +401,7 @@ export default function ModalForm(props) {
                     }}
                     inputProps={{
                       type: "text",
+                      required: true,
                     }}
                   />
                   <CustomInput
@@ -348,6 +412,7 @@ export default function ModalForm(props) {
                     }}
                     inputProps={{
                       type: "text",
+                      required: true,
                     }}
                   />
                   <CustomInput
@@ -358,6 +423,7 @@ export default function ModalForm(props) {
                     }}
                     inputProps={{
                       type: "text",
+                      required: true,
                     }}
                   />
                   <CustomInput
@@ -368,25 +434,25 @@ export default function ModalForm(props) {
                     }}
                     inputProps={{
                       type: "text",
+                      required: true,
                     }}
                   />
                   <CustomInput
                     labelText="Pincode"
                     id="pincode"
+                    error={pincodeflag2}
                     formControlProps={{
                       fullWidth: true,
                     }}
                     inputProps={{
                       type: "text",
+                      required: true,
                     }}
                   />
                   <CustomDropdown
                     buttonText={dropdowntitle2}
                     dropdownList={citynamelist}
-                    buttonProps={{
-                      round: true,
-                      color: "white",
-                    }}
+                    buttonProps={{}}
                     onClick={(key) => {
                       setDropDownTitle2(citynamelist[key]);
                       setChosenId2(cityidlist[key]);
@@ -398,6 +464,18 @@ export default function ModalForm(props) {
               <Button type="submit" color="rose">
                 Submit
               </Button>
+              {dropdownflag && (
+                <p style={{ color: "red" }}>*Select Billing Address City</p>
+              )}
+              {dropdownflag2 && (
+                <p style={{ color: "red" }}>*Select Shipping Address City</p>
+              )}
+              {dropdownflag3 && (
+                <p style={{ color: "red" }}>*Select Delivery Manager</p>
+              )}
+              {dropdownflag4 && (
+                <p style={{ color: "red" }}>*Select Account Manager</p>
+              )}
             </form>
           </CardBody>
         </Card>

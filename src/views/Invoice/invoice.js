@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useContext } from "react";
 import AuthContext from "store/auth-context";
+import { CSVLink, CSVDownload } from "react-csv";
 import axios from "axios";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
@@ -25,7 +26,8 @@ import CardHeader from "components/Card/CardHeader.js";
 import ReactTable from "components/ReactTable/ReactEditableTable";
 import CustomDropdown from "components/CustomDropdown/CustomDropdown.js";
 
-import EditClientModal from "components/Modal/BillableMonth/EditBillModal";
+// import EditClientModal from "components/Modal/BillableMonth/EditBillModal";
+import EditClientModal from "components/Modal/invoice/EditInvoiceModal";
 
 import styles from "assets/jss/material-dashboard-pro-react/views/extendedTablesStyle.js";
 
@@ -47,7 +49,6 @@ export default function ExtendedTables(props) {
   }
 
   let a = [{ day: "numeric" }, { month: "short" }, { year: "numeric" }];
-
   const [yearArray, setyearArray] = useState([]);
   const [BillMonth, setBillMonth] = useState(
     [
@@ -85,26 +86,51 @@ export default function ExtendedTables(props) {
     ][new Date().getMonth()]
   );
   const [ClientData, setClientData] = useState([]);
+  const [csvData, setcsvData] = useState([]);
   const [Response, setResponse] = useState(false);
   const [billyear, setbillyear] = useState(new Date().getFullYear());
   const [dropdowntitle2, setDropDownTitle2] = useState(2021);
   function hello() {
     axios
-      .get(`/billablemonth/list?monthName=${BillMonth}&year=${billyear}`, {
-        headers: {
-          Authorization: `Bearer ${props.header.token}`,
-        },
-      })
+      .get(
+        `/invoice/consultant/list?month=${BillMonthNumber}&year=${billyear}`,
+        {
+          headers: {
+            Authorization: `Bearer ${props.header.token}`,
+          },
+        }
+      )
       .then(function (response) {
         if (response.status === 401) {
           ctx.logout();
         } else {
           const data = response.data.payload;
           const transData = data.map((item) => Object.values(item));
-          const ddata = transData.map((item) =>
-            item.filter((dada) => dada !== null)
-          );
-          setClientData(ddata);
+          setClientData(transData);
+          setcsvData([
+            [
+              "Consultant FirstName",
+              "Consultant LastName",
+              "Client LocationName",
+              "Client Name",
+              "Po Number",
+              "Bill StartDate",
+              "Bill EndDate",
+              "Bill Rate",
+              "Bill Type",
+              "Bill Amount",
+              "Taxes",
+              "Total Amount",
+              "Invoice No",
+              "Invoice Date",
+              "Invoice Status",
+              "Payment Date",
+              "Invoice Id",
+              "Consultant Id",
+              "Billable Day /Hour",
+            ],
+            ...transData,
+          ]);
           setResponse(true);
         }
       })
@@ -116,6 +142,7 @@ export default function ExtendedTables(props) {
         }
       });
   }
+  var filenamee = `${BillMonth}-${billyear}.csv`;
 
   useEffect(() => {
     hello();
@@ -130,7 +157,7 @@ export default function ExtendedTables(props) {
       }
     }
     setyearArray(array);
-  }, [BillMonth, billyear, BillMonthNumber]);
+  }, [BillMonth, billyear]);
 
   return (
     <GridContainer>
@@ -147,7 +174,7 @@ export default function ExtendedTables(props) {
                   }}
                 >
                   <h3 style={{ color: "#345282", paddingLeft: "15px" }}>
-                    Billable Month Grid
+                    Invoice
                   </h3>
                   <div
                     style={{
@@ -155,6 +182,59 @@ export default function ExtendedTables(props) {
                       flexDirection: "row",
                     }}
                   >
+                    {ClientData.length > 0 && (
+                      <CSVLink filename={filenamee} data={csvData}>
+                        <Button
+                          style={{
+                            marginRight: 10,
+                            paddingBottom: 13,
+                            paddingTop: 13,
+                          }}
+                          color="primary"
+                          size="sm"
+                        >
+                          Download
+                        </Button>
+                      </CSVLink>
+                    )}
+
+                    {ClientData.length > 0 &&
+                      BillMonthNumber <= new Date().getMonth() + 1 &&
+                      BillMonthNumber >= new Date().getMonth() - 1 &&
+                      billyear === new Date().getFullYear() && (
+                        <Button
+                          style={{ marginRight: 25, marginBottom: 20 }}
+                          color="success"
+                          onClick={() => {
+                            axios
+                              .get(
+                                `/invoice/generate?month=${BillMonthNumber}&year=${billyear}`,
+                                {
+                                  headers: {
+                                    Authorization: `Bearer ${props.header.token}`,
+                                  },
+                                }
+                              )
+                              .then(function (response) {
+                                if (response.status === 401) {
+                                  ctx.logout();
+                                } else {
+                                  hello();
+                                }
+                              })
+                              .catch(function (error) {
+                                if (error.response) {
+                                  if (error.response.status === 401) {
+                                    ctx.logout();
+                                  }
+                                }
+                              });
+                          }}
+                        >
+                          Generate
+                        </Button>
+                      )}
+
                     <CustomDropdown
                       buttonText={dropdowntitle}
                       dropdownList={[
@@ -223,76 +303,57 @@ export default function ExtendedTables(props) {
               <CardBody>
                 <ReactTable
                   data={ClientData.map((prop, key) => {
+                    var postfix = "days";
+                    if (prop[8] === "Hourly") {
+                      postfix = "hrs";
+                    }
                     return {
                       id: key,
-                      clientName: prop[3],
-                      locationName: prop[4],
-                      startdate: join(prop[6], a, " "),
-                      enddate: join(prop[7], a, " "),
-                      totalDays: prop[10],
-                      workingDays: prop[9],
-                      weekends: prop[11],
-                      holidays: prop[12],
-                      valid: prop[13] ? "yes" : "no",
+                      firstName: `${prop[0]} ${prop[1]}`,
+                      clientName: `${prop[3]}, ${prop[2]}`,
+                      poNo: prop[4],
+                      startDate: `${prop[5]} to ${prop[6]}`,
+                      billRate: prop[7],
+                      billType: prop[8],
+                      billableAmount: prop[9],
+                      taxes: prop[10],
+                      totalAmount: prop[11],
+                      invoiceNo: prop[12],
+                      invoiceDate: prop[13],
+                      invoiceStatus: prop[14],
+                      paymentDate: prop[15],
+                      invoiceId: prop[16],
+                      consultantId: prop[17],
+                      hoursOrDays: `${prop[18]} ${postfix}`,
                       actions: (
                         <div className={classes.right}>
                           {BillMonthNumber > new Date().getMonth() - 1 &&
                           billyear >= new Date().getFullYear() ? (
-                            <div>
-                              {prop[13] ? (
-                                <Tooltip
-                                  id="tooltip-top"
-                                  title="edit"
-                                  placement="top"
-                                  classes={{ tooltip: classes.tooltip }}
-                                >
-                                  <Button
-                                    round
-                                    color="success"
-                                    className={
-                                      classes.actionButton +
-                                      " " +
-                                      classes.actionButtonRound
-                                    }
-                                  >
-                                    <EditClientModal
-                                      prop={prop}
-                                      token={props.header}
-                                      BillMonth={BillMonth}
-                                      BillMonthNumber={BillMonthNumber}
-                                      billyear={billyear}
-                                      hello={hello}
-                                    ></EditClientModal>
-                                  </Button>
-                                </Tooltip>
-                              ) : (
-                                <Tooltip
-                                  id="tooltip-top"
-                                  title="edit"
-                                  placement="top"
-                                  classes={{ tooltip: classes.tooltip }}
-                                >
-                                  <Button
-                                    round
-                                    disabled
-                                    className={
-                                      classes.actionButton +
-                                      " " +
-                                      classes.actionButtonRound
-                                    }
-                                  >
-                                    <EditClientModal
-                                      prop={prop}
-                                      token={props.header}
-                                      BillMonth={BillMonth}
-                                      BillMonthNumber={BillMonthNumber}
-                                      billyear={billyear}
-                                      hello={hello}
-                                    ></EditClientModal>
-                                  </Button>
-                                </Tooltip>
-                              )}
-                            </div>
+                            <Tooltip
+                              id="tooltip-top"
+                              title="edit"
+                              placement="top"
+                              classes={{ tooltip: classes.tooltip }}
+                            >
+                              <Button
+                                round
+                                color="success"
+                                className={
+                                  classes.actionButton +
+                                  " " +
+                                  classes.actionButtonRound
+                                }
+                              >
+                                <EditClientModal
+                                  prop={prop}
+                                  token={props.header}
+                                  BillMonth={BillMonth}
+                                  BillMonthNumber={BillMonthNumber}
+                                  billyear={billyear}
+                                  hello={hello}
+                                ></EditClientModal>
+                              </Button>
+                            </Tooltip>
                           ) : (
                             <Tooltip
                               id="tooltip-top"
@@ -326,36 +387,56 @@ export default function ExtendedTables(props) {
                   })}
                   columns={[
                     {
+                      Header: "Consultant",
+                      accessor: "firstName",
+                    },
+                    {
                       Header: "Client",
                       accessor: "clientName",
                     },
                     {
-                      Header: "Location",
-                      accessor: "locationName",
+                      Header: "Po No",
+                      accessor: "poNo",
                     },
                     {
-                      Header: "Start Date",
-                      accessor: "startdate",
+                      Header: "Bill Date",
+                      accessor: "startDate",
                     },
                     {
-                      Header: "End Date",
-                      accessor: "enddate",
+                      Header: "Day/Hour",
+                      accessor: "hoursOrDays",
                     },
                     {
-                      Header: "Total Days",
-                      accessor: "totalDays",
+                      Header: "Bill Rate",
+                      accessor: "billRate",
                     },
                     {
-                      Header: "Working Days",
-                      accessor: "workingDays",
+                      Header: "Bill Amount",
+                      accessor: "billableAmount",
                     },
                     {
-                      Header: "Weekends",
-                      accessor: "weekends",
+                      Header: "Taxes",
+                      accessor: "taxes",
                     },
                     {
-                      Header: "Holidays",
-                      accessor: "holidays",
+                      Header: "Total Bill",
+                      accessor: "totalAmount",
+                    },
+                    {
+                      Header: "Invoice No",
+                      accessor: "invoiceNo",
+                    },
+                    {
+                      Header: "Bill Date",
+                      accessor: "invoiceDate",
+                    },
+                    {
+                      Header: "Bill Status",
+                      accessor: "invoiceStatus",
+                    },
+                    {
+                      Header: "Pymt Date",
+                      accessor: "paymentDate",
                     },
                     {
                       Header: "Actions",
@@ -369,7 +450,7 @@ export default function ExtendedTables(props) {
             <>
               <CardHeader color="rose" icon>
                 <h3 style={{ color: "#345282", paddingLeft: "15px" }}>
-                  Billable Month Grid
+                  Invoice
                 </h3>
               </CardHeader>
               <h4 style={{ textAlign: "center" }}>Loading...</h4>

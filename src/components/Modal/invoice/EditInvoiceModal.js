@@ -16,7 +16,7 @@ import Edit from "@material-ui/icons/Edit";
 import Button from "components/CustomButtons/Button.js";
 
 import styles from "assets/jss/material-dashboard-pro-react/modalStyle.js";
-import ModalForm from "./EditBillFormModal";
+import ModalForm from "./EditInvoiceFormModal";
 
 const useStyles = makeStyles(styles);
 
@@ -29,7 +29,6 @@ export default function Modal(props) {
   const classes = useStyles();
 
   //  console.log(props.token)
-
   return (
     <div>
       <Edit onClick={() => setModal(true)} />
@@ -60,10 +59,7 @@ export default function Modal(props) {
           >
             <Close className={classes.modalClose} />
           </Button>
-          <h4 className={classes.modalTitle}>
-            Edit {props.prop[3]} {props.prop[4]} {props.BillMonth}{" "}
-            {props.billyear}
-          </h4>
+          <h4 className={classes.modalTitle}>Edit Client</h4>
         </DialogTitle>
         <DialogContent className={classes.modalBody}>
           <ModalForm

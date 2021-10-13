@@ -20,22 +20,22 @@ export default function ModalForm(props) {
 
   const submitHandler = (event) => {
     event.preventDefault();
-
-    axios({
-      method: "post",
-      url: "/client/save",
-      data: {
-        client: event.target[0].value,
-        userId: props.token.id,
-      },
-      headers: {
-        Authorization: `Bearer ${props.token.token}`,
-      },
-    }).then((response) => {
-      props.hello();
-    });
-
-    props.love();
+    if (event.target[0].value) {
+      axios({
+        method: "post",
+        url: "/client/save",
+        data: {
+          client: event.target[0].value,
+          userId: props.token.id,
+        },
+        headers: {
+          Authorization: `Bearer ${props.token.token}`,
+        },
+      }).then((response) => {
+        props.hello();
+      });
+      props.love();
+    }
   };
   return (
     <GridContainer>

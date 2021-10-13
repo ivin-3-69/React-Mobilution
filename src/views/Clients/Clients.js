@@ -1,10 +1,11 @@
 /*eslint-disable*/
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import AuthContext from "store/auth-context";
 import axios from "axios";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
-
+import { tooltip } from "assets/jss/material-dashboard-pro-react.js";
+import Tooltip from "@material-ui/core/Tooltip";
 // material-ui icons
 import Room from "@material-ui/icons/Room";
 
@@ -31,8 +32,7 @@ import ClientDetail from "./ClientDetail";
 const useStyles = makeStyles(styles);
 
 export default function ExtendedTables(props) {
-  //console.log(props);
-
+  const ctx = useContext(AuthContext);
   const [mode, setMode] = useState(true);
   const [ClientDetailId, setClientDetailId] = useState();
   const [ClientDetailName, setClientDetailName] = useState();
@@ -46,14 +46,24 @@ export default function ExtendedTables(props) {
         },
       })
       .then(function (response) {
-        const data = response.data.payload;
-        const transData = data.map((item) => Object.values(item));
-        const ddata = transData.map((item) =>
-          item.filter((dada) => dada !== null)
-        );
-        setClientData(ddata);
-        setResponse(true);
-        console.log(response);
+        if (response.status === 401) {
+          ctx.logout();
+        } else {
+          const data = response.data.payload;
+          const transData = data.map((item) => Object.values(item));
+          const ddata = transData.map((item) =>
+            item.filter((dada) => dada !== null)
+          );
+          setClientData(ddata);
+          setResponse(true);
+        }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
       });
   }
 
@@ -74,9 +84,21 @@ export default function ExtendedTables(props) {
       headers: {
         Authorization: `Bearer ${props.header.token}`,
       },
-    }).then((response) => {
-      hello();
-    });
+    })
+      .then((response) => {
+        if (response.status === 401) {
+          ctx.logout();
+        } else {
+          hello();
+        }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
+      });
   };
 
   return (
@@ -109,52 +131,73 @@ export default function ExtendedTables(props) {
                             // we've added some custom button actions
 
                             <div className={classes.right}>
-                              <Button
-                                round
-                                color="success"
-                                className={
-                                  classes.actionButton +
-                                  " " +
-                                  classes.actionButtonRound
-                                }
+                              <Tooltip
+                                id="tooltip-top"
+                                title="edit"
+                                placement="top"
+                                classes={{ tooltip: classes.tooltip }}
                               >
-                                <EditClientModal
-                                  prop={prop}
-                                  token={props.header}
-                                  hello={hello}
-                                ></EditClientModal>
-                              </Button>
-                              <Button
-                                round
-                                color="danger"
-                                className={
-                                  classes.actionButton +
-                                  " " +
-                                  classes.actionButtonRound
-                                }
+                                <Button
+                                  round
+                                  color="success"
+                                  className={
+                                    classes.actionButton +
+                                    " " +
+                                    classes.actionButtonRound
+                                  }
+                                >
+                                  <EditClientModal
+                                    prop={prop}
+                                    token={props.header}
+                                    hello={hello}
+                                  ></EditClientModal>
+                                </Button>
+                              </Tooltip>
+                              <Tooltip
+                                id="tooltip-top"
+                                title="delete"
+                                placement="top"
+                                classes={{ tooltip: classes.tooltip }}
                               >
-                                <DeleteModal
-                                  id={prop[0]}
-                                  delete={deleteHandler}
-                                  text={prop[1]}
-                                ></DeleteModal>
-                              </Button>
-                              <Button
-                                round
-                                onClick={() => {
-                                  setMode(false);
-                                  setClientDetailId(prop[0]);
-                                  setClientDetailName(prop[1]);
-                                }}
-                                color="info"
-                                className={
-                                  classes.actionButton +
-                                  " " +
-                                  classes.actionButtonRound
-                                }
+                                <Button
+                                  round
+                                  color="danger"
+                                  className={
+                                    classes.actionButton +
+                                    " " +
+                                    classes.actionButtonRound
+                                  }
+                                >
+                                  <DeleteModal
+                                    id={prop[0]}
+                                    delete={deleteHandler}
+                                    text={prop[1]}
+                                  ></DeleteModal>
+                                </Button>
+                              </Tooltip>
+                              <Tooltip
+                                id="tooltip-top"
+                                title="client locations"
+                                placement="top"
+                                classes={{ tooltip: classes.tooltip }}
                               >
-                                <Room className={classes.icon} />
-                              </Button>
+                                <Button
+                                  round
+                                  onClick={() => {
+                                    setMode(false);
+                                    setClientDetailId(prop[0]);
+                                    setClientDetailName(prop[1]);
+                                  }}
+                                  color="info"
+                                  className={
+                                    classes.actionButton +
+                                    " " +
+                                    classes.actionButtonRound
+                                  }
+                                >
+                                  <Room className={classes.icon} />
+                                </Button>
+                              </Tooltip>
                             </div>
                           ),
                         };

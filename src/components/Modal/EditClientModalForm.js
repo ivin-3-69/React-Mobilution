@@ -1,6 +1,5 @@
 /*eslint-disable*/
-
-import React from "react";
+import React, { useRef, useEffect } from "react";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 import axios from "axios";
@@ -18,24 +17,31 @@ const useStyles = makeStyles(styles);
 export default function ModalForm(props) {
   const submitHandler = (event) => {
     event.preventDefault();
+    if (event.target[0].value) {
+      axios({
+        method: "post",
+        url: "/client/save",
+        data: {
+          client: event.target[0].value,
+          userId: props.token.id,
+          clientId: props.prop[0],
+        },
+        headers: {
+          Authorization: `Bearer ${props.token.token}`,
+        },
+      }).then((response) => {
+        props.hello();
+      });
 
-    axios({
-      method: "post",
-      url: "/client/save",
-      data: {
-        client: event.target[0].value,
-        userId: props.token.id,
-        clientId: props.prop[0],
-      },
-      headers: {
-        Authorization: `Bearer ${props.token.token}`,
-      },
-    }).then((response) => {
-      props.hello();
-    });
-
-    props.love();
+      props.love();
+    }
   };
+
+  const input = useRef();
+  useEffect(() => {
+    input.current.value = props.prop[1];
+  }, []);
+
   return (
     <GridContainer>
       <GridItem xs={12} sm={12} md={12}>
@@ -49,7 +55,7 @@ export default function ModalForm(props) {
                   fullWidth: true,
                 }}
                 inputProps={{
-                  defaultValue: `${props.prop[1]}`,
+                  inputRef: input,
                   type: "text",
                 }}
               />

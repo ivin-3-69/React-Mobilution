@@ -61,6 +61,13 @@ export default function Consultant(props) {
           }
           setResponse(true);
         }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
       });
   }
   useEffect(() => {
@@ -77,13 +84,21 @@ export default function Consultant(props) {
       headers: {
         Authorization: `Bearer ${props.header.token}`,
       },
-    }).then((response) => {
-      if (response.status === 401) {
-        ctx.logout();
-      } else {
-        hello();
-      }
-    });
+    })
+      .then((response) => {
+        if (response.status === 401) {
+          ctx.logout();
+        } else {
+          hello();
+        }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
+      });
   };
   return (
     <>
@@ -159,7 +174,7 @@ export default function Consultant(props) {
                                   <DeleteModal
                                     id={prop[0]}
                                     delete={deleteHandler}
-                                    text={prop[3]}
+                                    text={prop[1]}
                                   ></DeleteModal>
                                 </Button>
                               </Tooltip>
@@ -175,7 +190,7 @@ export default function Consultant(props) {
                                   onClick={() => {
                                     setMode(false);
                                     setClientDetailId(prop[0]);
-                                    setClientDetailName(prop[3]);
+                                    setClientDetailName(prop[1]);
                                   }}
                                   color="info"
                                   className={
@@ -192,10 +207,6 @@ export default function Consultant(props) {
                         };
                       })}
                       columns={[
-                        {
-                          Header: "Consultant Id",
-                          accessor: "employeeId",
-                        },
                         {
                           Header: "First Name",
                           accessor: "firstname",

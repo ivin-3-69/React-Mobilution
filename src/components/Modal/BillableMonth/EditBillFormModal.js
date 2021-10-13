@@ -1,6 +1,6 @@
 /*eslint-disable*/
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 import Datetime from "react-datetime";
@@ -23,7 +23,10 @@ export default function ModalForm(props) {
   const [daysflag, setdaysflag] = useState(null);
   const [startdatee, setstartdate] = useState(new Date(`${props.prop[6]}`));
   const [enddatee, setenddate] = useState(new Date(`${props.prop[7]}`));
+
   const [holidayss, setholidayss] = useState();
+
+  const workingdays = useRef(0);
   const [workingdayss, setworkingdayss] = useState(props.prop[9]);
 
   function getDifferenceInDays(date1, date2) {
@@ -37,70 +40,108 @@ export default function ModalForm(props) {
       const dayOfWeek = curDate.getDay();
       if (!(dayOfWeek == 0 || dayOfWeek == 6)) {
         count++;
-        // console.log(dayOfWeek);
       }
-
       curDate.setDate(curDate.getDate() + 1);
     }
     return count;
   }
 
+  function valid(current) {
+    return current.isAfter(startdatee);
+  }
+
   useEffect(() => {
-    axios
-      .get(
-        `/holiday/count/byrange?id=${
-          props.prop[2]
-        }&startdate=${startdatee.getFullYear()}-${startdatee.getMonth()}-${startdatee.getDate()}&enddate=${enddatee.getFullYear()}-${enddatee.getMonth()}-${enddatee.getDate()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${props.token.token}`,
-          },
-        }
-      )
-      .then(function (response) {
-        setholidayss(response.data.payload);
-      });
+    if (startdatee && enddatee) {
+      if (startdatee.getMonth() && enddatee.getMonth()) {
+        axios
+          .get(
+            `/holiday/count/byrange?id=${
+              props.prop[2]
+            }&startdate=${startdatee.getFullYear()}-${
+              startdatee.getMonth() + 1
+            }-${startdatee.getDate()}&enddate=${enddatee.getFullYear()}-${
+              enddatee.getMonth() + 1
+            }-${enddatee.getDate()}`,
+            {
+              headers: {
+                Authorization: `Bearer ${props.token.token}`,
+              },
+            }
+          )
+          .then(function (response) {
+            setholidayss(response.data.payload);
+
+            if (
+              (enddatee - startdatee) / (1000 * 60 * 60 * 24) +
+                1 -
+                ((enddatee - startdatee) / (1000 * 60 * 60 * 24) +
+                  1 -
+                  getBusinessDatesCount(startdatee, enddatee)) -
+                response.data.payload >=
+              0
+            ) {
+              if (workingdays.current) {
+                workingdays.current.value =
+                  (enddatee - startdatee) / (1000 * 60 * 60 * 24) +
+                  1 -
+                  ((enddatee - startdatee) / (1000 * 60 * 60 * 24) +
+                    1 -
+                    getBusinessDatesCount(startdatee, enddatee)) -
+                  response.data.payload;
+              }
+            }
+          });
+      }
+    }
   }, [startdatee, enddatee]);
+
+  useEffect(() => {
+    setstartdate(new Date(`${props.prop[6]}`));
+    setenddate(new Date(`${props.prop[7]}`));
+  }, [props.prop[6], props.prop[7]]);
 
   const submitHandler = (event) => {
     event.preventDefault();
-    const startdate = new Date(event.target[0].value);
 
-    if (startdate.getDate() < 10) {
-      var newdate = `0${startdate.getDate()}`;
+    if (startdatee.getDate() < 10) {
+      var newdate = `0${startdatee.getDate()}`;
     } else {
-      newdate = startdate.getDate();
+      newdate = startdatee.getDate();
     }
 
-    if (startdate.getMonth() + 1 < 10) {
-      var newmonth = `0${startdate.getMonth() + 1}`;
+    if (startdatee.getMonth() + 1 < 10) {
+      var newmonth = `0${startdatee.getMonth() + 1}`;
     } else {
-      newmonth = startdate.getMonth() + 1;
+      newmonth = startdatee.getMonth() + 1;
     }
 
-    const enddate = new Date(event.target[1].value);
-
-    if (enddate.getDate() < 10) {
-      var newdate2 = `0${enddate.getDate()}`;
+    if (enddatee.getDate() < 10) {
+      var newdate2 = `0${enddatee.getDate()}`;
     } else {
-      newdate2 = enddate.getDate();
+      newdate2 = enddatee.getDate();
     }
 
-    if (enddate.getMonth() + 1 < 10) {
-      var newmonth2 = `0${enddate.getMonth() + 1}`;
+    if (enddatee.getMonth() + 1 < 10) {
+      var newmonth2 = `0${enddatee.getMonth() + 1}`;
     } else {
-      newmonth2 = enddate.getMonth() + 1;
+      newmonth2 = enddatee.getMonth() + 1;
     }
 
-    const totaldayss = getDifferenceInDays(startdate, enddate) + 1;
-    const businessdays = getBusinessDatesCount(startdate, enddate);
+    const totaldayss = getDifferenceInDays(startdatee, enddatee) + 1;
+    const businessdays = getBusinessDatesCount(startdatee, enddatee);
     const weekendss = totaldayss - businessdays;
-    const workingdayss = Number(event.target[2].value);
-    const holidays = Number(event.target[3].value);
+    // console.log(startdatee, enddatee);
+    console.log(Number(workingdays.current.value), holidayss);
+    console.log(weekendss, totaldayss);
+    console.log(
+      Number(workingdays.current.value) + holidayss + weekendss,
+      totaldayss
+    );
 
-    // console.log(workingdayss, holidayss);
-    // console.log(totaldayss, weekendss);
-    if (workingdayss + holidayss + weekendss <= totaldayss) {
+    if (
+      Number(workingdays.current.value) + holidayss + weekendss <=
+      totaldayss
+    ) {
       axios({
         method: "post",
         url: "/billablemonth/save",
@@ -110,17 +151,18 @@ export default function ModalForm(props) {
 
             clientLocationId: props.prop[2],
 
-            startDate: `${startdate.getFullYear()}-${newmonth}-${newdate}`,
+            startDate: `${startdatee.getFullYear()}-${newmonth}-${newdate}`,
 
-            endDate: `${enddate.getFullYear()}-${newmonth2}-${newdate2}`,
+            endDate: `${enddatee.getFullYear()}-${newmonth2}-${newdate2}`,
 
             totalDays: totaldayss,
 
             weekends: weekendss,
 
-            holidays: totaldayss - weekendss - workingdayss,
+            holidays:
+              totaldayss - weekendss - Number(workingdays.current.value),
 
-            workingDays: workingdayss,
+            workingDays: Number(workingdays.current.value),
 
             year: props.billyear,
 
@@ -141,9 +183,9 @@ export default function ModalForm(props) {
       setdaysflag(false);
     } else {
       setdaysflag(true);
-      // console.log("days input error");
     }
   };
+
   return (
     <GridContainer>
       <GridItem xs={12} sm={12} md={12}>
@@ -152,36 +194,84 @@ export default function ModalForm(props) {
             <form onSubmit={submitHandler}>
               <InputLabel className={classes.label}>Start Date</InputLabel>
               <br />
-              <FormControl fullWidth>
-                <Datetime
-                  timeFormat={false}
-                  inputProps={{ placeholder: "Date Picker Here" }}
-                  initialValue={new Date(`${props.prop[6]}`)}
-                  onChange={(event) => {
-                    setstartdate((prev) => event._d);
-                  }}
-                />
-              </FormControl>
-              {/* {console.log(props.BillMonthNumber)} */}
+              {startdatee.getDate() > 0 ? (
+                <FormControl fullWidth>
+                  <Datetime
+                    timeFormat={false}
+                    dateFormat="DD/MM/YYYY"
+                    inputProps={{ placeholder: "Date Picker Here" }}
+                    value={startdatee}
+                    onChange={(event) => {
+                      if (event._d) {
+                        if (event._d.getHours() === 0) {
+                          event._d.setHours(5, 30, 0);
+                        }
+                        setstartdate((prev) => event._d);
+                      }
+                    }}
+                    // input={true}
+                  />
+                </FormControl>
+              ) : (
+                <FormControl fullWidth>
+                  <Datetime
+                    timeFormat={false}
+                    dateFormat="DD/MM/YYYY"
+                    inputProps={{ placeholder: "Date Picker Here", value: "" }}
+                    onChange={(event) => {
+                      if (event._d) {
+                        if (event._d.getHours() === 0) {
+                          event._d.setHours(5, 30, 0);
+                        }
+                        setstartdate((prev) => event._d);
+                      }
+                    }}
+                  />
+                </FormControl>
+              )}
+
               <InputLabel className={classes.label}>End Date</InputLabel>
               <br />
-              <FormControl fullWidth>
-                <Datetime
-                  timeFormat={false}
-                  inputProps={{ placeholder: "Date Picker Here" }}
-                  initialValue={new Date(`${props.prop[7]}`)}
-                  onChange={(event) => {
-                    setenddate((prev) => event._d);
-                  }}
-                />
-              </FormControl>
-              {(enddatee - startdatee) / (1000 * 60 * 60 * 24) +
-                1 -
-                ((enddatee - startdatee) / (1000 * 60 * 60 * 24) +
-                  1 -
-                  getBusinessDatesCount(startdatee, enddatee)) -
-                holidayss >=
-                0 && (
+              {enddatee.getDate() > 0 ? (
+                <FormControl fullWidth>
+                  <Datetime
+                    timeFormat={false}
+                    dateFormat="DD/MM/YYYY"
+                    inputProps={{ placeholder: "Date Picker Here" }}
+                    value={enddatee}
+                    onChange={(event) => {
+                      if (event._d) {
+                        if (event._d.getHours() === 0) {
+                          event._d.setHours(5, 30, 0);
+                        }
+                        setenddate((prev) => event._d);
+                      }
+                    }}
+                    // input={true}
+                    isValidDate={valid}
+                  />
+                </FormControl>
+              ) : (
+                <FormControl fullWidth>
+                  <Datetime
+                    timeFormat={false}
+                    dateFormat="DD/MM/YYYY"
+                    inputProps={{ placeholder: "Date Picker Here", value: "" }}
+                    onChange={(event) => {
+                      if (event._d) {
+                        if (event._d.getHours() === 0) {
+                          event._d.setHours(5, 30, 0);
+                        }
+                        setenddate((prev) => event._d);
+                      }
+                    }}
+                    // input={true}
+                    isValidDate={valid}
+                  />
+                </FormControl>
+              )}
+
+              {startdatee.getDate() > 0 && enddatee.getDate() > 0 && (
                 <CustomInput
                   labelText="Working Days"
                   id="WorkDays"
@@ -194,16 +284,12 @@ export default function ModalForm(props) {
                       setworkingdayss(event.target.value);
                     },
                     type: "number",
-                    defaultValue:
-                      (enddatee - startdatee) / (1000 * 60 * 60 * 24) +
-                      1 -
-                      ((enddatee - startdatee) / (1000 * 60 * 60 * 24) +
-                        1 -
-                        getBusinessDatesCount(startdatee, enddatee)) -
-                      holidayss,
+                    inputRef: workingdays,
+                    defaultValue: workingdayss,
                   }}
                 />
               )}
+
               {startdatee.getDate() >= 0 &&
                 enddatee.getDate() >= 0 &&
                 holidayss >= 0 && (
@@ -220,7 +306,7 @@ export default function ModalForm(props) {
                         getBusinessDatesCount(startdatee, enddatee)}
                     </p>
                     <p>Client Holidays : {holidayss} </p>
-                    <p>
+                    {/* <p>
                       leave :{" "}
                       {(enddatee - startdatee) / (1000 * 60 * 60 * 24) +
                         1 -
@@ -229,7 +315,7 @@ export default function ModalForm(props) {
                           getBusinessDatesCount(startdatee, enddatee)) -
                         holidayss -
                         workingdayss}
-                    </p>
+                    </p> */}
                   </>
                 )}
 

@@ -26,6 +26,8 @@ export default function ModalForm(props) {
   const [gstflag, setgstflag] = useState(null);
   const [numberflag, setnumberflag] = useState(null);
   const [panflag, setpanflag] = useState(null);
+  const [pincodeflag1, setpincodeflag1] = useState(null);
+  const [pincodeflag2, setpincodeflag2] = useState(null);
   useEffect(() => {
     axios({
       method: "get",
@@ -130,17 +132,20 @@ export default function ModalForm(props) {
 
   const submitHandler = (event) => {
     event.preventDefault();
-    let flag = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(
+    let flag1 = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(
       event.target[1].value
     );
     let flag2 = /^[0-9]{10}$/.test(event.target[5].value);
-    let flag3 = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(event.target[5].value);
-    let flag4 =
+    let flag3 = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(event.target[2].value);
+    let flag5 = /^[0-9]{6}$/.test(event.target[13].value);
+    let flag6 = /^[0-9]{6}$/.test(event.target[19].value);
+    let flag4;
+    if (
       event.target[0].value &&
       event.target[1].value &&
       event.target[2].value &&
       event.target[4].value &&
-      event.target[5].value &&
+      event.target[5].value > 0 &&
       event.target[6].value &&
       event.target[9].value &&
       event.target[10].value &&
@@ -151,8 +156,14 @@ export default function ModalForm(props) {
       event.target[16].value &&
       event.target[17].value &&
       event.target[18].value &&
-      event.target[19].value;
-    if (flag1 && flag2 && flag3 && flag4) {
+      event.target[19].value
+    ) {
+      flag4 = true;
+    } else {
+      flag4 = false;
+    }
+    console.log(flag1, flag2, flag3, flag4, flag5, flag6);
+    if (flag1 && flag2 && flag3 && flag4 && flag5 && flag6) {
       axios({
         method: "post",
         url: "/clientlocation/save",
@@ -207,6 +218,8 @@ export default function ModalForm(props) {
     setgstflag(!flag1);
     setnumberflag(!flag2);
     setpanflag(!flag3);
+    setpincodeflag1(!flag5);
+    setpincodeflag2(!flag6);
   };
   return (
     <GridContainer>
@@ -366,6 +379,7 @@ export default function ModalForm(props) {
                   <CustomInput
                     labelText="pincode"
                     id="pincode"
+                    error={pincodeflag1}
                     formControlProps={{
                       fullWidth: true,
                     }}
@@ -437,6 +451,7 @@ export default function ModalForm(props) {
                   <CustomInput
                     labelText="Pincode"
                     id="pincode"
+                    error={pincodeflag2}
                     formControlProps={{
                       fullWidth: true,
                     }}

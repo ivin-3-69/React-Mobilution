@@ -119,14 +119,16 @@ function Table({ columns, data }) {
     {
       columns,
       data,
-      defaultColumn, // Be sure to pass the defaultColumn option
+      defaultColumn,
       filterTypes,
       initialState: { pageSize: 10, pageIndex: 0 },
       autoResetPage: false,
       autoResetFilters: false,
       disableSortBy: true,
+      manualSortBy: false,
+      sortable: false,
     },
-    useFilters, // useFilters!
+    useFilters,
     useSortBy,
     usePagination
   );

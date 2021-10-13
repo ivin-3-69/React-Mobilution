@@ -57,6 +57,13 @@ export default function ExtendedTables(props) {
           setClientData(ddata);
           setResponse(true);
         }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
       });
   }
 
@@ -77,13 +84,21 @@ export default function ExtendedTables(props) {
       headers: {
         Authorization: `Bearer ${props.header.token}`,
       },
-    }).then((response) => {
-      if (response.status === 401) {
-        ctx.logout();
-      } else {
-        hello();
-      }
-    });
+    })
+      .then((response) => {
+        if (response.status === 401) {
+          ctx.logout();
+        } else {
+          hello();
+        }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
+      });
   };
 
   return (

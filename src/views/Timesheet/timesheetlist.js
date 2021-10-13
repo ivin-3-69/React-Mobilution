@@ -63,6 +63,8 @@ export default function Consultant(props) {
   const [BillMonthNumber, setBillMonthNumber] = useState(
     new Date().getMonth() + 1
   );
+  const [yearArray, setyearArray] = useState([]);
+
   const [dropdowntitle, setDropDownTitle] = useState(
     [
       "JAN",
@@ -103,6 +105,17 @@ export default function Consultant(props) {
   }
   useEffect(() => {
     hello();
+    var array = [];
+    if (billyear > 0) {
+      for (let i = -5; i < 6; i++) {
+        array.push(billyear + i);
+      }
+    } else {
+      for (let i = -5; i < 6; i++) {
+        array.push(new Date().getFullYear() + i);
+      }
+    }
+    setyearArray(array);
   }, [BillMonth, billyear]);
 
   const classes = useStyles();
@@ -187,23 +200,11 @@ export default function Consultant(props) {
                         />
                         <CustomDropdown
                           buttonText={dropdowntitle2}
-                          dropdownList={[
-                            2019,
-                            2020,
-                            2021,
-                            2022,
-                            2023,
-                            2024,
-                            2025,
-                          ]}
+                          dropdownList={yearArray}
                           buttonProps={{}}
                           onClick={(key) => {
-                            setDropDownTitle2(
-                              [2019, 2020, 2021, 2022, 2023, 2024, 2025][key]
-                            );
-                            setbillyear(
-                              [2019, 2020, 2021, 2022, 2023, 2024, 2025][key]
-                            );
+                            setDropDownTitle2(yearArray[key]);
+                            setbillyear(yearArray[key]);
                           }}
                         />
                       </div>

@@ -67,6 +67,13 @@ export default function ExtendedTables(props) {
             const checc = ddata[0][5];
           }
         }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
       });
   }, []);
 
@@ -86,13 +93,21 @@ export default function ExtendedTables(props) {
         headers: {
           Authorization: `Bearer ${props.header.token}`,
         },
-      }).then((response) => {
-        if (response.status === 401) {
-          ctx.logout();
-        } else {
-          hello();
-        }
-      });
+      })
+        .then((response) => {
+          if (response.status === 401) {
+            ctx.logout();
+          } else {
+            hello();
+          }
+        })
+        .catch(function (error) {
+          if (error.response) {
+            if (error.response.status === 401) {
+              ctx.logout();
+            }
+          }
+        });
     }
   };
 
@@ -115,6 +130,13 @@ export default function ExtendedTables(props) {
           setClientData(ddata);
           setResponse(true);
         }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
       });
   }
   useEffect(() => {
@@ -129,13 +151,21 @@ export default function ExtendedTables(props) {
       headers: {
         Authorization: `Bearer ${props.header.token}`,
       },
-    }).then((response) => {
-      if (response.status === 401) {
-        ctx.logout();
-      } else {
-        hello();
-      }
-    });
+    })
+      .then((response) => {
+        if (response.status === 401) {
+          ctx.logout();
+        } else {
+          hello();
+        }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
+      });
   };
   return (
     <>
@@ -163,7 +193,7 @@ export default function ExtendedTables(props) {
                     ></AddClientModal>
                   </CardIcon>
                   <h3 style={{ color: "#345282", paddingLeft: "100px" }}>
-                    Client Location Holiday List
+                    {props.clientname} {props.ClientDetailName} Holiday List
                   </h3>
                   <div
                     style={{
@@ -180,24 +210,26 @@ export default function ExtendedTables(props) {
                     }
                   >
                     {/* {console.log(ClientData[ClientData.length - 1][5])} */}
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={ClientData[ClientData.length - 1][5]}
-                          classes={{
-                            checked: classes.checked,
-                            root: classes.checkRoot,
-                          }}
-                          onChange={handleChange}
-                          checkedIcon={
-                            <Check className={classes.checkedIcon} />
-                          }
-                          // icon={<Check className={classes.uncheckedIcon} />}
-                        />
-                      }
-                      classes={{ label: classes.label }}
-                      label="Holidays Set"
-                    />
+                    {ClientData.length > 0 && (
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={ClientData[ClientData.length - 1][5]}
+                            classes={{
+                              checked: classes.checked,
+                              root: classes.checkRoot,
+                            }}
+                            onChange={handleChange}
+                            checkedIcon={
+                              <Check className={classes.checkedIcon} />
+                            }
+                            // icon={<Check className={classes.uncheckedIcon} />}
+                          />
+                        }
+                        classes={{ label: classes.label }}
+                        label="Holidays Set"
+                      />
+                    )}
                   </div>
                 </CardHeader>
                 <CardBody>
@@ -293,7 +325,7 @@ export default function ExtendedTables(props) {
                     <AddClientModal token={props.header}></AddClientModal>
                   </CardIcon>
                   <h3 style={{ color: "#345282", paddingLeft: "100px" }}>
-                    Client Location Holiday List
+                    {props.clientname} {props.ClientDetailName} Holiday List
                   </h3>
                 </CardHeader>
                 <h4 style={{ textAlign: "center" }}>Loading...</h4>

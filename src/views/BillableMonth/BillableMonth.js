@@ -48,6 +48,7 @@ export default function ExtendedTables(props) {
 
   let a = [{ day: "numeric" }, { month: "short" }, { year: "numeric" }];
 
+  const [yearArray, setyearArray] = useState([]);
   const [BillMonth, setBillMonth] = useState(
     [
       "JAN",
@@ -106,11 +107,30 @@ export default function ExtendedTables(props) {
           setClientData(ddata);
           setResponse(true);
         }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
       });
   }
+
   useEffect(() => {
     hello();
-  }, [BillMonth, billyear]);
+    var array = [];
+    if (billyear > 0) {
+      for (let i = -5; i < 6; i++) {
+        array.push(billyear + i);
+      }
+    } else {
+      for (let i = -5; i < 6; i++) {
+        array.push(new Date().getFullYear() + i);
+      }
+    }
+    setyearArray(array);
+  }, [BillMonth, billyear, BillMonthNumber]);
 
   return (
     <GridContainer>
@@ -127,7 +147,7 @@ export default function ExtendedTables(props) {
                   }}
                 >
                   <h3 style={{ color: "#345282", paddingLeft: "15px" }}>
-                    Billable Month
+                    Billable Month Grid
                   </h3>
                   <div
                     style={{
@@ -190,15 +210,11 @@ export default function ExtendedTables(props) {
                     />
                     <CustomDropdown
                       buttonText={dropdowntitle2}
-                      dropdownList={[2019, 2020, 2021, 2022, 2023, 2024, 2025]}
+                      dropdownList={yearArray}
                       buttonProps={{}}
                       onClick={(key) => {
-                        setDropDownTitle2(
-                          [2019, 2020, 2021, 2022, 2023, 2024, 2025][key]
-                        );
-                        setbillyear(
-                          [2019, 2020, 2021, 2022, 2023, 2024, 2025][key]
-                        );
+                        setDropDownTitle2(yearArray[key]);
+                        setbillyear(yearArray[key]);
                       }}
                     />
                   </div>
@@ -353,7 +369,7 @@ export default function ExtendedTables(props) {
             <>
               <CardHeader color="rose" icon>
                 <h3 style={{ color: "#345282", paddingLeft: "15px" }}>
-                  Billable Month
+                  Billable Month Grid
                 </h3>
               </CardHeader>
               <h4 style={{ textAlign: "center" }}>Loading...</h4>

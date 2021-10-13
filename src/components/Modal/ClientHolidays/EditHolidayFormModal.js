@@ -21,13 +21,14 @@ const useStyles = makeStyles(styles);
 
 export default function ModalForm(props) {
   const classes = useStyles();
+  const [startdatee, setstartdate] = useState(new Date(`${props.prop[2]}`));
+
   const submitHandler = (event) => {
     event.preventDefault();
-    if (event.target[0].value && event.target[1].value) {
-      const holiday = new Date(event.target[0].value);
-      const holidate = `${holiday.getFullYear()}-${
-        holiday.getMonth() + 1
-      }-${holiday.getDate()}`;
+    if (startdatee && event.target[1].value) {
+      var holiday = `${startdatee.getFullYear()}-${
+        startdatee.getMonth() + 1
+      }-${startdatee.getDate()}`;
 
       axios({
         method: "post",
@@ -35,10 +36,10 @@ export default function ModalForm(props) {
         data: {
           id: props.prop[0],
           clientLocationId: props.id,
-          date: holidate,
+          date: holiday,
           description: event.target[1].value,
           holidaysEntered: props.prop[5],
-          year: props.prop[6],
+          year: startdatee.getFullYear(),
         },
         headers: {
           Authorization: `Bearer ${props.token.token}`,
@@ -61,8 +62,17 @@ export default function ModalForm(props) {
               <FormControl fullWidth>
                 <Datetime
                   timeFormat={false}
+                  dateFormat="DD/MM/YYYY"
                   inputProps={{ placeholder: " Pick Date" }}
-                  initialValue={new Date(`${props.prop[2]}`)}
+                  value={startdatee}
+                  onChange={(event) => {
+                    if (event._d) {
+                      if (event._d.getHours() === 0) {
+                        event._d.setHours(5, 30, 0);
+                      }
+                      setstartdate((prev) => event._d);
+                    }
+                  }}
                 />
               </FormControl>
 

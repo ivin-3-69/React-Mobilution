@@ -44,7 +44,9 @@ export default function Calendar(props) {
   const [itemm2, setitem2] = useState([]);
   const [alert, setAlert] = useState(null);
   const [flag, setflag] = useState(false);
-  const [hours, setHours] = useState([]);
+  const [hours, setHours] = useState();
+  const [leavecount, setleavecount] = useState();
+  const [holidaycount, setholidaycount] = useState();
   const selectedEvent = (event) => {
     window.alert(event.title);
   };
@@ -67,16 +69,29 @@ export default function Calendar(props) {
             const transData2 = data2.map((item) => Object.values(item));
             // console.log(data2[1][2], transData2[1][2]);
             if (transData2[0]) {
+              // console.log();
               for (var i = 0; i < transData2.length; i++) {
-                items2.push({
-                  id: 7,
-                  date: transData2[i][2],
-                  hours: 0,
-                  dayType: "H",
-                });
+                if (
+                  new Date(transData2[i][2]).getMonth() + 1 ==
+                  props.BillMonthNumber
+                ) {
+                  items2.push({
+                    id: 7,
+                    date: transData2[i][2],
+                    hours: 0,
+                    dayType: "H",
+                  });
+                }
               }
               setitem2(items2);
             }
+          }
+        }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
           }
         }
       })
@@ -88,19 +103,27 @@ export default function Calendar(props) {
             consultantId: props.clientId,
             month: props.BillMonthNumber,
             year: props.billyear,
-            isFinalised: "Y",
+
             list: items2,
           },
           headers: {
             Authorization: `Bearer ${props.header.token}`,
           },
-        }).then((response) => {
-          if (response.status === 401) {
-            ctx.logout();
-          } else {
-            hello();
-          }
-        });
+        })
+          .then((response) => {
+            if (response.status === 401) {
+              ctx.logout();
+            } else {
+              hello();
+            }
+          })
+          .catch(function (error) {
+            if (error.response) {
+              if (error.response.status === 401) {
+                ctx.logout();
+              }
+            }
+          });
       });
   }
   function hello() {
@@ -118,54 +141,104 @@ export default function Calendar(props) {
           ctx.logout();
         } else {
           setHours(response.data.payload.totalWorkingHours);
+          setleavecount(response.data.payload.leaveCount);
+          setholidaycount(response.data.payload.holidayCount);
           const data = response.data.payload.list;
           if (data) {
             const transData = data.map((item) => Object.values(item));
             if (transData[0]) {
               for (var i = 0; i < transData.length; i++) {
                 if (transData[i][5] === "H" && transData[i][4] === 0) {
-                  items1.push({
-                    title: "H",
-                    start: new Date(transData[i][3]),
-                    end: new Date(transData[i][3]),
-                    color: "azure",
-                  });
+                  if (new Date(transData[i][3]) > new Date()) {
+                    items1.push({
+                      title: "H",
+                      start: new Date(transData[i][3]),
+                      end: new Date(transData[i][3]),
+                    });
+                  } else {
+                    items1.push({
+                      title: "H",
+                      start: new Date(transData[i][3]),
+                      end: new Date(transData[i][3]),
+                      color: "azure",
+                    });
+                  }
                 } else if (transData[i][5] === "H" && transData[i][4] > 0) {
-                  items1.push({
-                    title: transData[i][4],
-                    start: new Date(transData[i][3]),
-                    end: new Date(transData[i][3]),
-                    color: "azure",
-                  });
-                } else if (transData[i][5] === "L") {
-                  items1.push({
-                    title: transData[i][4],
-                    start: new Date(transData[i][3]),
-                    end: new Date(transData[i][3]),
-                    color: "orange",
-                  });
-                } else {
-                  if (
-                    new Date(transData[i][3]).getDay() == 6 ||
-                    new Date(transData[i][3]).getDay() == 0
-                  ) {
+                  if (new Date(transData[i][3]) > new Date()) {
                     items1.push({
                       title: transData[i][4],
                       start: new Date(transData[i][3]),
                       end: new Date(transData[i][3]),
-                      color: "red",
                     });
                   } else {
                     items1.push({
                       title: transData[i][4],
                       start: new Date(transData[i][3]),
                       end: new Date(transData[i][3]),
+                      color: "azure",
                     });
+                  }
+                } else if (transData[i][5] === "L") {
+                  if (new Date(transData[i][3]) > new Date()) {
+                    items1.push({
+                      title: transData[i][4],
+                      start: new Date(transData[i][3]),
+                      end: new Date(transData[i][3]),
+                    });
+                  } else {
+                    items1.push({
+                      title: transData[i][4],
+                      start: new Date(transData[i][3]),
+                      end: new Date(transData[i][3]),
+                      color: "orange",
+                    });
+                  }
+                } else {
+                  if (
+                    new Date(transData[i][3]).getDay() == 6 ||
+                    new Date(transData[i][3]).getDay() == 0
+                  ) {
+                    if (new Date(transData[i][3]) > new Date()) {
+                      items1.push({
+                        title: transData[i][4],
+                        start: new Date(transData[i][3]),
+                        end: new Date(transData[i][3]),
+                      });
+                    } else {
+                      items1.push({
+                        title: transData[i][4],
+                        start: new Date(transData[i][3]),
+                        end: new Date(transData[i][3]),
+                        color: "red",
+                      });
+                    }
+                  } else {
+                    if (new Date(transData[i][3]) > new Date()) {
+                      items1.push({
+                        title: transData[i][4],
+                        start: new Date(transData[i][3]),
+                        end: new Date(transData[i][3]),
+                      });
+                    } else {
+                      items1.push({
+                        title: transData[i][4],
+                        start: new Date(transData[i][3]),
+                        end: new Date(transData[i][3]),
+                        color: "green",
+                      });
+                    }
                   }
                 }
               }
               setitem1(items1);
             }
+          }
+        }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
           }
         }
       });
@@ -230,7 +303,7 @@ export default function Calendar(props) {
         consultantId: props.clientId,
         month: props.BillMonthNumber,
         year: props.billyear,
-        isFinalised: "Y",
+
         list: [
           {
             id: 7,
@@ -245,13 +318,21 @@ export default function Calendar(props) {
       headers: {
         Authorization: `Bearer ${props.header.token}`,
       },
-    }).then((response) => {
-      if (response.status === 401) {
-        ctx.logout();
-      } else {
-        hello();
-      }
-    });
+    })
+      .then((response) => {
+        if (response.status === 401) {
+          ctx.logout();
+        } else {
+          hello();
+        }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
+      });
     setAlert(null);
   };
   const addLeaveEvent = (e, slotInfo) => {
@@ -262,7 +343,7 @@ export default function Calendar(props) {
         consultantId: props.clientId,
         month: props.BillMonthNumber,
         year: props.billyear,
-        isFinalised: "Y",
+
         list: [
           {
             id: 7,
@@ -277,13 +358,21 @@ export default function Calendar(props) {
       headers: {
         Authorization: `Bearer ${props.header.token}`,
       },
-    }).then((response) => {
-      if (response.status === 401) {
-        ctx.logout();
-      } else {
-        hello();
-      }
-    });
+    })
+      .then((response) => {
+        if (response.status === 401) {
+          ctx.logout();
+        } else {
+          hello();
+        }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
+      });
     setAlert(null);
   };
   const addHolidayEvent = (e, slotInfo) => {
@@ -294,7 +383,7 @@ export default function Calendar(props) {
         consultantId: props.clientId,
         month: props.BillMonthNumber,
         year: props.billyear,
-        isFinalised: "Y",
+
         list: [
           {
             id: 7,
@@ -309,13 +398,21 @@ export default function Calendar(props) {
       headers: {
         Authorization: `Bearer ${props.header.token}`,
       },
-    }).then((response) => {
-      if (response.status === 401) {
-        ctx.logout();
-      } else {
-        hello();
-      }
-    });
+    })
+      .then((response) => {
+        if (response.status === 401) {
+          ctx.logout();
+        } else {
+          hello();
+        }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
+      });
     setAlert(null);
   };
   const hideAlert = () => {
@@ -337,6 +434,21 @@ export default function Calendar(props) {
     };
     return {
       className: backgroundColor,
+      style: style,
+    };
+  };
+  const eventColors2 = (event) => {
+    var style = {
+      borderRadius: "0px",
+      color: "black",
+      border: "0px",
+      display: "block",
+      fontSize: "20px",
+      paddingTop: "15px",
+      paddingBottom: "15px",
+      backgroundColor: "grey",
+    };
+    return {
       style: style,
     };
   };
@@ -386,7 +498,7 @@ export default function Calendar(props) {
                       slotInfo.start <= endd &&
                       slotInfo.start >= new Date(props.startDate)
                     ) {
-                      console.log(endd);
+                      // console.log(endd);
                       addNewEventAlert(slotInfo, true);
                     }
                   }}
@@ -404,9 +516,7 @@ export default function Calendar(props) {
                   defaultDate={
                     new Date(`${props.billyear}-${props.BillMonthNumber}-01`)
                   }
-                  onSelectEvent={(event) => selectedEvent(event)}
-                  onSelectSlot={(slotInfo) => addNewEventAlert(slotInfo)}
-                  eventPropGetter={eventColors}
+                  eventPropGetter={eventColors2}
                   components={{
                     toolbar: RBCToolbar,
                   }}
@@ -430,7 +540,7 @@ export default function Calendar(props) {
                 Weekend
                 <FontAwesomeIcon
                   icon={faCircle}
-                  style={{ color: "gray", marginLeft: "30px" }}
+                  style={{ color: "green", marginLeft: "30px" }}
                 />
                 Weekdays
               </div>
@@ -447,6 +557,18 @@ export default function Calendar(props) {
                 >
                   Total Hours Worked:{hours}
                 </h4>
+                <h4
+                  className={classes.legendTitle}
+                  style={{ color: "#345282", paddingLeft: "470px" }}
+                >
+                  Holiday Count:{holidaycount}
+                </h4>
+                <h4
+                  className={classes.legendTitle}
+                  style={{ color: "#345282", paddingLeft: "470px" }}
+                >
+                  Leave Count:{leavecount}
+                </h4>
               </div>
             </CardFooter>
           </Card>
@@ -455,3 +577,6 @@ export default function Calendar(props) {
     </div>
   );
 }
+
+// const [leavecount, setleavecount] = useState();
+// const [holidaycount, setholidaycount] = useState();

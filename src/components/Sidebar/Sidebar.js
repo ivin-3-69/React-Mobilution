@@ -389,7 +389,7 @@ function Sidebar(props) {
         target="_blank"
         className={logoNormal}
       >
-        {logoText}
+        RECIBO
       </a>
     </div>
   );

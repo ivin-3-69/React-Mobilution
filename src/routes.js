@@ -8,48 +8,46 @@ import BillableMonth from "views/BillableMonth/BillableMonth.js";
 import Timesheet from "views/Timesheet/timesheetlist";
 import Invoice from "views/Invoice/invoice";
 // @material-ui/icons
-import Apps from "@material-ui/icons/Apps";
 import DashboardIcon from "@material-ui/icons/Dashboard";
+import Business from "@material-ui/icons/Business";
+import Person from "@material-ui/icons/Person";
+import Receipt from "@material-ui/icons/Receipt";
 import DateRange from "@material-ui/icons/DateRange";
-import GridOn from "@material-ui/icons/GridOn";
-import Image from "@material-ui/icons/Image";
-import Place from "@material-ui/icons/Place";
-import Timeline from "@material-ui/icons/Timeline";
-import WidgetsIcon from "@material-ui/icons/Widgets";
+import AccountBalance from "@material-ui/icons/AccountBalance";
 
 var dashRoutes = [
   {
     path: "/client",
     name: "Client",
-    icon: DashboardIcon,
+    icon: Business,
     component: Client,
     layout: "/admin",
   },
   {
     path: "/consultant",
     name: "Consultant",
-    icon: DashboardIcon,
+    icon: Person,
     component: Consultant,
     layout: "/admin",
   },
   {
     path: "/billmonth",
     name: "Billable Month",
-    icon: DashboardIcon,
+    icon: Receipt,
     component: BillableMonth,
     layout: "/admin",
   },
   {
     path: "/timesheet",
     name: "Timesheet",
-    icon: DashboardIcon,
+    icon: DateRange,
     component: Timesheet,
     layout: "/admin",
   },
   {
     path: "/invoice",
     name: "Invoice",
-    icon: DashboardIcon,
+    icon: AccountBalance,
     component: Invoice,
     layout: "/admin",
   },

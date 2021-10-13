@@ -1,6 +1,5 @@
 /*eslint-disable*/
-
-import React from "react";
+import React, { useRef, useEffect } from "react";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 import axios from "axios";
@@ -37,6 +36,12 @@ export default function ModalForm(props) {
       props.love();
     }
   };
+
+  const input = useRef();
+  useEffect(() => {
+    input.current.value = props.prop[1];
+  }, []);
+
   return (
     <GridContainer>
       <GridItem xs={12} sm={12} md={12}>
@@ -50,7 +55,7 @@ export default function ModalForm(props) {
                   fullWidth: true,
                 }}
                 inputProps={{
-                  defaultValue: `${props.prop[1]}`,
+                  inputRef: input,
                   type: "text",
                 }}
               />

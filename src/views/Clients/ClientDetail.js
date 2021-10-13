@@ -34,6 +34,8 @@ const ClientDetail = (props) => {
   const [Response, setResponse] = useState(false);
   const [mode, setMode] = useState(true);
   const [ClientLocationId, setClientLocationId] = useState();
+  const [ClientDetailName, setClientDetailName] = useState();
+
   function hello() {
     axios
       .get(`/clientlocation/byclient?id=${props.clientId}`, {
@@ -53,6 +55,13 @@ const ClientDetail = (props) => {
           setClientData(ddata);
           setResponse(true);
         }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
       });
   }
 
@@ -68,13 +77,21 @@ const ClientDetail = (props) => {
       headers: {
         Authorization: `Bearer ${props.header.token}`,
       },
-    }).then((response) => {
-      if (response.status === 401) {
-        ctx.logout();
-      } else {
-        hello();
-      }
-    });
+    })
+      .then((response) => {
+        if (response.status === 401) {
+          ctx.logout();
+        } else {
+          hello();
+        }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
+      });
   };
 
   const classes = useStyles();
@@ -182,6 +199,7 @@ const ClientDetail = (props) => {
                                   onClick={() => {
                                     setMode(false);
                                     setClientLocationId(prop[0]);
+                                    setClientDetailName(prop[1]);
                                   }}
                                   color="info"
                                   className={
@@ -259,6 +277,8 @@ const ClientDetail = (props) => {
         <ClientHolidays
           header={props.header}
           clientlocationid={ClientLocationId}
+          ClientDetailName={ClientDetailName}
+          clientname={props.clientName}
           click={() => {
             setMode(true);
           }}

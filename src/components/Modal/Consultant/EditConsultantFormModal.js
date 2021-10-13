@@ -72,6 +72,7 @@ export default function ModalForm(props) {
                 inputProps={{
                   defaultValue: `${props.prop[1]}`,
                   type: "text",
+                  required: true,
                 }}
               />
               <CustomInput
@@ -83,6 +84,7 @@ export default function ModalForm(props) {
                 inputProps={{
                   defaultValue: `${props.prop[2]}`,
                   type: "text",
+                  required: true,
                 }}
               />
               <CustomInput
@@ -94,6 +96,7 @@ export default function ModalForm(props) {
                 inputProps={{
                   defaultValue: `${props.prop[3]}`,
                   type: "text",
+                  required: true,
                 }}
               />
               <CustomInput
@@ -105,6 +108,7 @@ export default function ModalForm(props) {
                 inputProps={{
                   defaultValue: `${props.prop[5]}`,
                   type: "email",
+                  required: true,
                 }}
               />
               <CustomInput
@@ -117,6 +121,7 @@ export default function ModalForm(props) {
                 inputProps={{
                   defaultValue: `${props.prop[4]}`,
                   type: "text",
+                  required: true,
                 }}
               />
               <Button type="submit" color="rose">

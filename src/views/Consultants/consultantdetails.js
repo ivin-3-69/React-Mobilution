@@ -55,6 +55,13 @@ const ClientDetail = (props) => {
         }
 
         setResponse(true);
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
       });
   }
   useEffect(() => {
@@ -69,13 +76,21 @@ const ClientDetail = (props) => {
       headers: {
         Authorization: `Bearer ${props.header.token}`,
       },
-    }).then((response) => {
-      if (response.status === 401) {
-        ctx.logout();
-      } else {
-        hello();
-      }
-    });
+    })
+      .then((response) => {
+        if (response.status === 401) {
+          ctx.logout();
+        } else {
+          hello();
+        }
+      })
+      .catch(function (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            ctx.logout();
+          }
+        }
+      });
   };
 
   const classes = useStyles();
@@ -139,29 +154,6 @@ const ClientDetail = (props) => {
                                 hello={hello}
                               ></EditModal>
                               {/* {console.log(prop[8].id)} */}
-                            </Button>
-                          </Tooltip>
-
-                          <Tooltip
-                            id="tooltip-top"
-                            title="unassign consultant"
-                            placement="top"
-                            classes={{ tooltip: classes.tooltip }}
-                          >
-                            <Button
-                              round
-                              color="danger"
-                              className={
-                                classes.actionButton +
-                                " " +
-                                classes.actionButtonRound
-                              }
-                            >
-                              <DeleteModal
-                                id={prop[0]}
-                                delete={deleteHandler}
-                                text={prop[9].locationName}
-                              ></DeleteModal>
                             </Button>
                           </Tooltip>
                         </div>

@@ -66,7 +66,7 @@ export default function Modal(props) {
           >
             <Close className={classes.modalClose} />
           </Button>
-          <h4 className={classes.modalTitle}>Add New Consultant</h4>
+          <h4 className={classes.modalTitle}>Assign To Client Location</h4>
         </DialogTitle>
         <DialogContent className={classes.modalBody}>
           <ModalForm

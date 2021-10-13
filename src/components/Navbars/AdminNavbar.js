@@ -59,11 +59,7 @@ export default function AdminNavbar(props) {
             </div>
           </Hidden>
           <div className={classes.flex}>
-            <Button
-              href="/admin/dashboard"
-              className={classes.title}
-              color="transparent"
-            >
+            <Button href="" className={classes.title} color="transparent">
               {brandText}
             </Button>
           </div>
